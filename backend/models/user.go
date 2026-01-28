@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type UserRole string
@@ -24,7 +23,7 @@ type User struct {
 	UpdatedAt    time.Time  `gorm:"autoUpdateTime" json:"updated_at"`
 
 	// Relations
-	Profile        UserProfile      `gorm:"foreignKey:UserID" json:"profile,omitempty"`
+	Profile        *UserProfile      `gorm:"foreignKey:UserID" json:"profile,omitempty"`
 	OAuthProviders []OAuthProvider `gorm:"foreignKey:UserID" json:"oauth_providers,omitempty"`
 	Orders         []Order         `gorm:"foreignKey:UserID" json:"orders,omitempty"`
 }
@@ -38,7 +37,7 @@ type UserProfile struct {
 	CreatedAt  time.Time  `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt  time.Time  `gorm:"autoUpdateTime" json:"updated_at"`
 
-	User User `gorm:"foreignKey:UserID" json:"user,omitempty"`
+	User *User `gorm:"foreignKey:UserID" json:"user,omitempty"`
 }
 
 type OAuthProvider struct {
@@ -52,5 +51,5 @@ type OAuthProvider struct {
 	CreatedAt      time.Time  `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt      time.Time  `gorm:"autoUpdateTime" json:"updated_at"`
 
-	User User `gorm:"foreignKey:UserID" json:"user,omitempty"`
+	User *User `gorm:"foreignKey:UserID" json:"user,omitempty"`
 }

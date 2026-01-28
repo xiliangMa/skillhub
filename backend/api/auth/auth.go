@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // LoginRequest 登录请求
@@ -162,4 +161,42 @@ func GetMe(c *gin.Context) {
 	user.PasswordHash = ""
 
 	c.JSON(http.StatusOK, user)
+}
+
+// OAuthLogin OAuth登录
+// @Summary OAuth登录
+// @Description OAuth第三方登录
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param provider path string true "OAuth提供商"
+// @Router /auth/oauth/{provider} [get]
+func OAuthLogin(c *gin.Context) {
+	provider := c.Param("provider")
+	c.JSON(200, gin.H{
+		"message": "OAuthLogin endpoint - temporarily disabled",
+		"provider": provider,
+	})
+}
+
+// GitHubCallback GitHub回调
+// @Summary GitHub OAuth回调
+// @Description GitHub OAuth登录回调
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Router /auth/callback/github [get]
+func GitHubCallback(c *gin.Context) {
+	c.JSON(200, gin.H{"message": "GitHubCallback endpoint - temporarily disabled"})
+}
+
+// GoogleCallback Google回调
+// @Summary Google OAuth回调
+// @Description Google OAuth登录回调
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Router /auth/callback/google [get]
+func GoogleCallback(c *gin.Context) {
+	c.JSON(200, gin.H{"message": "GoogleCallback endpoint - temporarily disabled"})
 }

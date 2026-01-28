@@ -3,16 +3,16 @@ package main
 import (
 	"log"
 	"skillhub/api/admin"
-	"skillhub/api/auth"
+	authhandler "skillhub/api/auth"
 	"skillhub/api/payment"
 	"skillhub/api/skills"
 	"skillhub/config"
-	"skillhub/docs"
+	// "skillhub/docs"
 	"skillhub/middleware"
 	"skillhub/models"
 	svcauth "skillhub/services/auth"
-	"skillhub/services/payment"
-	svcScheduler "skillhub/services/scheduler"
+	// "skillhub/services/payment"
+	// svcScheduler "skillhub/services/scheduler"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -38,11 +38,11 @@ func main() {
 	svcauth.InitOAuth()
 
 	// 初始化支付服务
-	svcpayment.InitPayment()
+	// svcpayment.InitPayment()
 
 	// 初始化默认定时任务
-	svcScheduler.InitDefaultTasks()
-	svcScheduler.InitScheduler()
+	// svcScheduler.InitDefaultTasks()
+	// svcScheduler.InitScheduler()
 
 	if config.AppConfig.Server.Mode == "release" {
 		gin.SetMode(gin.ReleaseMode)
@@ -83,13 +83,13 @@ func main() {
 			auth.GET("/callback/google", authhandler.GoogleCallback)
 		}
 
-		skills := v1.Group("/skills")
+		skillsGroup := v1.Group("/skills")
 		{
-			skills.GET("", skills.ListSkills)
-			skills.GET("/:id", skills.GetSkill)
-			skills.GET("/categories", skills.GetCategories)
-			skills.GET("/hot", skills.GetHotSkills)
-			skills.GET("/trending", skills.GetTrendingSkills)
+			skillsGroup.GET("", skills.ListSkills)
+			skillsGroup.GET("/:id", skills.GetSkill)
+			skillsGroup.GET("/categories", skills.GetCategories)
+			skillsGroup.GET("/hot", skills.GetHotSkills)
+			skillsGroup.GET("/trending", skills.GetTrendingSkills)
 		}
 
 		users := v1.Group("/users")
@@ -98,24 +98,24 @@ func main() {
 			// users routes will be added later
 		}
 
-		payment := v1.Group("/payment")
+		paymentGroup := v1.Group("/payment")
 		{
-			payment.Use(middleware.AuthMiddleware())
-			payment.POST("/orders", payment.CreateOrder)
-			payment.GET("/orders", payment.GetOrders)
-			payment.POST("/payment/orders/:id/pay", payment.GetPaymentURL)
-			payment.POST("/callback/alipay", payment.AlipayCallback)
+			paymentGroup.Use(middleware.AuthMiddleware())
+			paymentGroup.POST("/orders", payment.CreateOrder)
+			paymentGroup.GET("/orders", payment.GetOrders)
+			paymentGroup.POST("/payment/orders/:id/pay", payment.GetPaymentURL)
+			paymentGroup.POST("/callback/alipay", payment.AlipayCallback)
 		}
 
-		admin := v1.Group("/admin")
+		adminGroup := v1.Group("/admin")
 		{
-			admin.Use(middleware.AuthMiddleware())
-			admin.Use(middleware.AdminMiddleware())
-			admin.GET("/skills", admin.ListSkills)
-			admin.PUT("/skills/:id", admin.UpdateSkill)
-			admin.GET("/users", admin.ListUsers)
-			admin.GET("/orders", admin.ListOrders)
-			admin.GET("/analytics", admin.GetAnalytics)
+			adminGroup.Use(middleware.AuthMiddleware())
+			adminGroup.Use(middleware.AdminMiddleware())
+			adminGroup.GET("/skills", admin.ListSkills)
+			adminGroup.PUT("/skills/:id", admin.UpdateSkill)
+			adminGroup.GET("/users", admin.ListUsers)
+			adminGroup.GET("/orders", admin.ListOrders)
+			adminGroup.GET("/analytics", admin.GetAnalytics)
 		}
 	}
 

@@ -14,7 +14,7 @@ const (
 )
 
 type SkillCategory struct {
-	ID        uuid UUID      `gorm:"type:uuid;primary_key;default:uuid_generate_v4()" json:"id"`
+	ID        uuid.UUID      `gorm:"type:uuid;primary_key;default:uuid_generate_v4()" json:"id"`
 	Name      string         `gorm:"type:varchar(255);not null" json:"name"`
 	ParentID  *uuid.UUID     `gorm:"type:uuid;index" json:"parent_id,omitempty"`
 	SortOrder int            `gorm:"default:0" json:"sort_order"`

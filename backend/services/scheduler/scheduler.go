@@ -4,7 +4,7 @@ import (
 	"log"
 	"skillhub/config"
 	"skillhub/models"
-	"skillhub/services/crawler"
+	// "skillhub/services/crawler"
 
 	"github.com/robfig/cron/v3"
 )
@@ -45,9 +45,9 @@ func loadScheduledTasks() {
 func AddTask(taskID, cronExpression string) error {
 	_, err := GlobalScheduler.cron.AddFunc(cronExpression, func() {
 		log.Printf("Executing scheduled task: %s", taskID)
-		if err := crawler.RunScheduledTask(taskID); err != nil {
-			log.Printf("Error executing task %s: %v", taskID, err)
-		}
+		// if err := crawler.RunScheduledTask(taskID); err != nil {
+		// 	log.Printf("Error executing task %s: %v", taskID, err)
+		// }
 	})
 
 	if err != nil {

@@ -62,3 +62,7 @@ func AutoMigrate() error {
 		&ScheduledTask{},
 	)
 }
+
+func GetDB() *gorm.DB {
+	return DB
+}
