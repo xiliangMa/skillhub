@@ -3,11 +3,13 @@ package main
 import (
 	"log"
 	"skillhub/api/auth"
+	"skillhub/api/skills"
 	"skillhub/config"
 	"skillhub/docs"
 	"skillhub/middleware"
 	"skillhub/models"
 	svcauth "skillhub/services/auth"
+	"skillhub/services/scheduler"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -31,6 +33,10 @@ func main() {
 
 	// 初始化OAuth
 	svcauth.InitOAuth()
+
+	// 初始化默认定时任务
+	scheduler.InitDefaultTasks()
+	scheduler.InitScheduler()
 
 	if config.AppConfig.Server.Mode == "release" {
 		gin.SetMode(gin.ReleaseMode)
@@ -73,7 +79,11 @@ func main() {
 
 		skills := v1.Group("/skills")
 		{
-			// skills routes will be added later
+			skills.GET("", skills.ListSkills)
+			skills.GET("/:id", skills.GetSkill)
+			skills.GET("/categories", skills.GetCategories)
+			skills.GET("/hot", skills.GetHotSkills)
+			skills.GET("/trending", skills.GetTrendingSkills)
 		}
 
 		users := v1.Group("/users")
