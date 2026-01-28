@@ -2,14 +2,17 @@ package main
 
 import (
 	"log"
+	"skillhub/api/admin"
 	"skillhub/api/auth"
+	"skillhub/api/payment"
 	"skillhub/api/skills"
 	"skillhub/config"
 	"skillhub/docs"
 	"skillhub/middleware"
 	"skillhub/models"
 	svcauth "skillhub/services/auth"
-	"skillhub/services/scheduler"
+	"skillhub/services/payment"
+	svcScheduler "skillhub/services/scheduler"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -34,9 +37,12 @@ func main() {
 	// 初始化OAuth
 	svcauth.InitOAuth()
 
+	// 初始化支付服务
+	svcpayment.InitPayment()
+
 	// 初始化默认定时任务
-	scheduler.InitDefaultTasks()
-	scheduler.InitScheduler()
+	svcScheduler.InitDefaultTasks()
+	svcScheduler.InitScheduler()
 
 	if config.AppConfig.Server.Mode == "release" {
 		gin.SetMode(gin.ReleaseMode)
@@ -88,14 +94,28 @@ func main() {
 
 		users := v1.Group("/users")
 		{
+			users.Use(middleware.AuthMiddleware())
 			// users routes will be added later
+		}
+
+		payment := v1.Group("/payment")
+		{
+			payment.Use(middleware.AuthMiddleware())
+			payment.POST("/orders", payment.CreateOrder)
+			payment.GET("/orders", payment.GetOrders)
+			payment.POST("/payment/orders/:id/pay", payment.GetPaymentURL)
+			payment.POST("/callback/alipay", payment.AlipayCallback)
 		}
 
 		admin := v1.Group("/admin")
 		{
 			admin.Use(middleware.AuthMiddleware())
 			admin.Use(middleware.AdminMiddleware())
-			// admin routes will be added later
+			admin.GET("/skills", admin.ListSkills)
+			admin.PUT("/skills/:id", admin.UpdateSkill)
+			admin.GET("/users", admin.ListUsers)
+			admin.GET("/orders", admin.ListOrders)
+			admin.GET("/analytics", admin.GetAnalytics)
 		}
 	}
 
