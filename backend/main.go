@@ -2,8 +2,12 @@ package main
 
 import (
 	"log"
+	"skillhub/api/auth"
 	"skillhub/config"
 	"skillhub/docs"
+	"skillhub/middleware"
+	"skillhub/models"
+	"skillhub/services/auth"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -19,6 +23,14 @@ import (
 // @BasePath /api/v1
 func main() {
 	config.AppConfig = config.LoadConfig()
+
+	// 初始化数据库
+	if err := models.InitDB(); err != nil {
+		log.Fatal("Failed to initialize database:", err)
+	}
+
+	// 初始化OAuth
+	auth.InitOAuth()
 
 	if config.AppConfig.Server.Mode == "release" {
 		gin.SetMode(gin.ReleaseMode)
@@ -51,7 +63,12 @@ func main() {
 	{
 		auth := v1.Group("/auth")
 		{
-			// auth routes will be added later
+			auth.POST("/login", authhandler.Login)
+			auth.POST("/register", authhandler.Register)
+			auth.GET("/me", middleware.AuthMiddleware(), authhandler.GetMe)
+			auth.GET("/oauth/:provider", authhandler.OAuthLogin)
+			auth.GET("/callback/github", authhandler.GitHubCallback)
+			auth.GET("/callback/google", authhandler.GoogleCallback)
 		}
 
 		skills := v1.Group("/skills")
@@ -66,6 +83,8 @@ func main() {
 
 		admin := v1.Group("/admin")
 		{
+			admin.Use(middleware.AuthMiddleware())
+			admin.Use(middleware.AdminMiddleware())
 			// admin routes will be added later
 		}
 	}
