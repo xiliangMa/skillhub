@@ -7,7 +7,7 @@ import (
 	"skillhub/docs"
 	"skillhub/middleware"
 	"skillhub/models"
-	"skillhub/services/auth"
+	svcauth "skillhub/services/auth"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -30,7 +30,7 @@ func main() {
 	}
 
 	// 初始化OAuth
-	auth.InitOAuth()
+	svcauth.InitOAuth()
 
 	if config.AppConfig.Server.Mode == "release" {
 		gin.SetMode(gin.ReleaseMode)
