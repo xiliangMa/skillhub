@@ -7,17 +7,17 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-background to-muted/20 py-24">
-        <div className="container">
+      <section className="bg-gradient-to-b from-background to-muted/20 py-16 md:py-24 px-4 md:px-6">
+        <div className="container mx-auto">
           <div className="max-w-3xl mx-auto text-center space-y-6">
-            <h1 className="text-5xl font-bold tracking-tight">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
               Discover and Purchase AI Skills
             </h1>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-lg md:text-xl text-muted-foreground">
               The best AI assistant skills marketplace for your applications
             </p>
 
-            <div className="max-w-xl mx-auto">
+            <div className="max-w-xl mx-auto w-full">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                 <Input
@@ -28,7 +28,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="flex items-center justify-center space-x-4 pt-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Button size="lg">
                 Start Browsing
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -42,8 +42,8 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section className="py-16 bg-muted/20">
-        <div className="container">
+      <section className="py-16 px-4 md:px-6 bg-muted/20">
+        <div className="container mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center space-y-2">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
@@ -79,14 +79,14 @@ export default function Home() {
       </section>
 
       {/* Hot Skills */}
-      <section className="py-16">
-        <div className="container">
+      <section className="py-16 px-4 md:px-6">
+        <div className="container mx-auto">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-3xl font-bold">Hot Skills</h2>
-            <Button variant="outline">View All</Button>
+            <Button variant="outline" size="sm">View All</Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
               <SkillCardSkeleton key={i} />
             ))}
@@ -95,14 +95,14 @@ export default function Home() {
       </section>
 
       {/* Trending Skills */}
-      <section className="py-16 bg-muted/20">
-        <div className="container">
+      <section className="py-16 px-4 md:px-6 bg-muted/20">
+        <div className="container mx-auto">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-3xl font-bold">Trending Skills</h2>
-            <Button variant="outline">View All</Button>
+            <Button variant="outline" size="sm">View All</Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
               <SkillCardSkeleton key={i} />
             ))}
