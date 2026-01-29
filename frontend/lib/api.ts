@@ -138,12 +138,12 @@ export const skillsApi = {
 
   getHot: async (limit = 10) => {
     const response = await api.get('/skills/hot', { params: { limit } })
-    return response.data.data
+    return response.data
   },
 
   getTrending: async (limit = 10) => {
     const response = await api.get('/skills/trending', { params: { limit } })
-    return response.data.data
+    return response.data
   },
 }
 
