@@ -141,16 +141,16 @@ export default function AdminDashboard() {
   )
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-white">
       {/* Header */}
-      <div className="border-b">
+      <div className="border-b bg-white/80 backdrop-blur-sm border-slate-200">
         <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold">{t.admin.dashboardTitle}</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{t.admin.dashboardTitle}</h1>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="border-b">
+      <div className="border-b bg-white/60 backdrop-blur-sm border-slate-200">
         <div className="container mx-auto px-4">
           <div className="flex space-x-4 py-2">
             {[
@@ -164,8 +164,8 @@ export default function AdminDashboard() {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`px-4 py-2 text-sm font-medium transition-colors ${
                   activeTab === tab.id
-                    ? 'text-foreground border-b-2 border-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-slate-600 hover:text-blue-600'
                 }`}
               >
                 {tab.label}
@@ -179,23 +179,23 @@ export default function AdminDashboard() {
       <div className="container mx-auto px-4 py-6 flex-1">
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="text-muted-foreground">{t.home.loading}</div>
+            <div className="text-slate-600">{t.home.loading}</div>
           </div>
         ) : (
           <>
             {activeTab === 'overview' && <OverviewContent />}
             {activeTab === 'skills' && (
-              <div className="text-center py-12 text-muted-foreground">
+              <div className="text-center py-12 text-slate-600">
                 {t.admin.skillsManagement} coming soon...
               </div>
             )}
             {activeTab === 'users' && (
-              <div className="text-center py-12 text-muted-foreground">
+              <div className="text-center py-12 text-slate-600">
                 {t.admin.usersManagement} coming soon...
               </div>
             )}
             {activeTab === 'orders' && (
-              <div className="text-center py-12 text-muted-foreground">
+              <div className="text-center py-12 text-slate-600">
                 {t.admin.ordersManagement} coming soon...
               </div>
             )}

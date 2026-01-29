@@ -32,36 +32,36 @@ export function SkillCard({
     <Link href={`/skills/${id}`}>
       <div className="group relative h-full">
         {/* Glow effect */}
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition duration-500" />
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-400/30 to-purple-400/30 rounded-xl blur opacity-0 group-hover:opacity-100 transition duration-500" />
 
         {/* Card */}
-        <div className="relative h-full bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-sm rounded-xl border border-slate-700/50 group-hover:border-slate-600/50 transition-all overflow-hidden">
+        <div className="relative h-full bg-gradient-to-br from-white to-blue-50/90 backdrop-blur-sm rounded-xl border border-slate-200 group-hover:border-blue-300 transition-all overflow-hidden">
           {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/10 to-transparent rounded-full blur-xl" />
-          <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-purple-500/10 to-transparent rounded-full blur-xl" />
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100/50 to-transparent rounded-full blur-xl" />
+          <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-purple-100/50 to-transparent rounded-full blur-xl" />
 
           <CardHeader className="relative">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 flex items-center justify-center">
-                  <Cpu className="h-6 w-6 text-blue-400" />
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-50 to-white border border-slate-200 flex items-center justify-center">
+                  <Cpu className="h-6 w-6 text-blue-600" />
                 </div>
-                <CardTitle className="text-xl text-white font-semibold group-hover:text-blue-300 transition-colors">
+                <CardTitle className="text-xl text-slate-900 font-semibold group-hover:text-blue-700 transition-colors">
                   {name}
                 </CardTitle>
               </div>
               {priceType === "free" ? (
-                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30">
+                <Badge className="bg-green-100/50 text-green-700 border-green-300 hover:bg-green-100">
                   {t.home.free}
                 </Badge>
               ) : (
-                <Badge className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-300 border-blue-500/30 hover:from-blue-500/30 hover:to-purple-500/30">
+                <Badge className="bg-gradient-to-r from-blue-100/50 to-purple-100/50 text-blue-700 border-blue-300 hover:from-blue-100 hover:to-purple-100">
                   <DollarSign className="h-3 w-3 mr-1" />
                   {price}
                 </Badge>
               )}
             </div>
-            <CardDescription className="text-slate-400 line-clamp-2">
+            <CardDescription className="text-slate-600 line-clamp-2">
               {description}
             </CardDescription>
           </CardHeader>
@@ -70,21 +70,21 @@ export function SkillCard({
             {/* Stats grid */}
             <div className="grid grid-cols-3 gap-3 mb-6">
               <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-yellow-400">
+                <div className="flex items-center gap-1.5 text-yellow-600">
                   <Star className="h-4 w-4 fill-current" />
                   <span className="font-semibold">{stars}</span>
                 </div>
                 <div className="text-xs text-slate-500 font-mono">STARS</div>
               </div>
               <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-purple-400">
+                <div className="flex items-center gap-1.5 text-purple-600">
                   <GitFork className="h-4 w-4" />
                   <span className="font-semibold">{forks}</span>
                 </div>
                 <div className="text-xs text-slate-500 font-mono">FORKS</div>
               </div>
               <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-cyan-400">
+                <div className="flex items-center gap-1.5 text-cyan-600">
                   <Download className="h-4 w-4" />
                   <span className="font-semibold">{downloads}</span>
                 </div>
@@ -96,8 +96,8 @@ export function SkillCard({
             <Button
               className={`w-full h-11 font-semibold transition-all ${
                 priceType === "free"
-                  ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                  : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+                  : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
               }`}
             >
               {priceType === "free" ? (

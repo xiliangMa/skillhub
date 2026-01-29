@@ -48,26 +48,26 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-muted/20 px-4">
-      <Card className="w-full max-w-md">
+    <div className="flex items-center justify-center min-h-screen bg-slate-50 px-4">
+      <Card className="w-full max-w-md border-slate-200 bg-white">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
+          <CardTitle className="text-2xl font-bold text-center text-slate-900">
             {isLogin ? t.auth.loginTitle : t.auth.registerTitle}
           </CardTitle>
-          <CardDescription className="text-center">
+          <CardDescription className="text-center text-slate-600">
             {isLogin ? t.auth.loginSubtitle : t.auth.registerSubtitle}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-destructive/10 text-destructive px-4 py-2 rounded-md text-sm">
+              <div className="bg-red-50 text-red-600 px-4 py-2 rounded-md text-sm border border-red-200">
                 {error}
               </div>
             )}
-            
+
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
+              <label htmlFor="email" className="text-sm font-medium text-slate-700">
                 {t.auth.emailAddress}
               </label>
               <Input
@@ -78,11 +78,12 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
+                className="border-slate-300"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
+              <label htmlFor="password" className="text-sm font-medium text-slate-700">
                 {t.auth.password}
               </label>
               <Input
@@ -94,19 +95,20 @@ export default function LoginPage() {
                 required
                 disabled={loading}
                 minLength={6}
+                className="border-slate-300"
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white" disabled={loading}>
               {loading ? t.auth.processing : (isLogin ? t.auth.login : t.auth.register)}
             </Button>
 
-            <div className="text-center text-sm text-muted-foreground">
+            <div className="text-center text-sm text-slate-600">
               {isLogin ? t.auth.noAccount : t.auth.hasAccount}
               <button
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}
-                className="text-primary hover:underline font-medium ml-1"
+                className="text-blue-600 hover:underline font-medium ml-1"
               >
                 {isLogin ? t.auth.register : t.auth.login}
               </button>

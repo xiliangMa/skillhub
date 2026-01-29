@@ -35,25 +35,25 @@ export default function ZhPage() {
   }, [])
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-white">
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-background to-muted/20 py-16 md:py-24 px-4 md:px-6">
+      <section className="bg-gradient-to-b from-blue-50/50 to-white py-16 md:py-24 px-4 md:px-6">
         <div className="container mx-auto">
           <div className="max-w-3xl mx-auto text-center space-y-6">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
               {t.home.heroTitle}
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground">
+            <p className="text-lg md:text-xl text-slate-600">
               {t.home.heroSubtitle}
             </p>
 
             <div className="max-w-xl mx-auto w-full">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+                <Search className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
                 <Input
                   type="search"
                   placeholder={t.home.searchPlaceholder}
-                  className="h-12 pl-10 text-lg"
+                  className="h-12 pl-10 text-lg bg-white border-slate-200"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && e.currentTarget.value) {
                       window.location.href = `/zh/skills?search=${encodeURIComponent(e.currentTarget.value)}`
@@ -65,13 +65,13 @@ export default function ZhPage() {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Link href="/zh/skills">
-                <Button size="lg">
+                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
                   {t.home.startBrowsing}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/categories">
-                <Button variant="outline" size="lg">
+                <Button variant="outline" size="lg" className="border-slate-300 bg-white hover:bg-slate-50 text-slate-700">
                   {t.home.learnMore}
                 </Button>
               </Link>
@@ -81,36 +81,36 @@ export default function ZhPage() {
       </section>
 
       {/* Features */}
-      <section className="py-16 px-4 md:px-6 bg-muted/20">
+      <section className="py-16 px-4 md:px-6 bg-slate-50/50">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-8">{t.home.whyChooseUs}</h2>
+          <h2 className="text-3xl font-bold text-center mb-8 text-slate-900">{t.home.whyChooseUs}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-blue-100 text-blue-600">
                 <Zap className="h-6 w-6" />
               </div>
-              <h3 className="text-lg font-semibold">{t.features.quickIntegration.title}</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="text-lg font-semibold text-slate-900">{t.features.quickIntegration.title}</h3>
+              <p className="text-sm text-slate-600">
                 {t.features.quickIntegration.description}
               </p>
             </div>
 
             <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-purple-100 text-purple-600">
                 <TrendingUp className="h-6 w-6" />
               </div>
-              <h3 className="text-lg font-semibold">{t.features.continuousUpdates.title}</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="text-lg font-semibold text-slate-900">{t.features.continuousUpdates.title}</h3>
+              <p className="text-sm text-slate-600">
                 {t.features.continuousUpdates.description}
               </p>
             </div>
 
             <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-cyan-100 text-cyan-600">
                 <Folder className="h-6 w-6" />
               </div>
-              <h3 className="text-lg font-semibold">{t.features.richCategories.title}</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="text-lg font-semibold text-slate-900">{t.features.richCategories.title}</h3>
+              <p className="text-sm text-slate-600">
                 {t.features.richCategories.description}
               </p>
             </div>
@@ -122,20 +122,20 @@ export default function ZhPage() {
       <section className="py-16 px-4 md:px-6">
         <div className="container mx-auto">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold">{t.home.hotSkills}</h2>
+            <h2 className="text-3xl font-bold text-slate-900">{t.home.hotSkills}</h2>
             <Link href="/zh/skills">
-              <Button variant="outline" size="sm">{t.home.learnMore}</Button>
+              <Button variant="outline" size="sm" className="border-slate-300 bg-white hover:bg-slate-50 text-slate-700">{t.home.learnMore}</Button>
             </Link>
           </div>
 
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
+                <div key={i} className="h-64 bg-slate-200/50 animate-pulse rounded-lg" />
               ))}
             </div>
           ) : hotSkills.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
+            <div className="text-center py-12 text-slate-600">
               {t.home.noHotSkills}
             </div>
           ) : (
@@ -159,23 +159,23 @@ export default function ZhPage() {
       </section>
 
       {/* Trending Skills */}
-      <section className="py-16 px-4 md:px-6 bg-muted/20">
+      <section className="py-16 px-4 md:px-6 bg-slate-50/50">
         <div className="container mx-auto">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold">{t.home.trendingSkills}</h2>
+            <h2 className="text-3xl font-bold text-slate-900">{t.home.trendingSkills}</h2>
             <Link href="/zh/skills">
-              <Button variant="outline" size="sm">{t.home.learnMore}</Button>
+              <Button variant="outline" size="sm" className="border-slate-300 bg-white hover:bg-slate-50 text-slate-700">{t.home.learnMore}</Button>
             </Link>
           </div>
 
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-64 bg-muted animate-pulse rounded-lg" />
+                <div key={i} className="h-64 bg-slate-200/50 animate-pulse rounded-lg" />
               ))}
             </div>
           ) : trendingSkills.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
+            <div className="text-center py-12 text-slate-600">
               {t.home.noTrendingSkills}
             </div>
           ) : (
