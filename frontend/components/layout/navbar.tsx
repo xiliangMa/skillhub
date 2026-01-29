@@ -57,7 +57,7 @@ export function Navbar() {
                     <UserCircle className="h-5 w-5 text-blue-600" />
                   </div>
                 </div>
-                <span className="text-sm font-medium">{user.email}</span>
+                <span className="text-sm font-medium">{user.name || user.username || user.email}</span>
               </Button>
 
               {userMenuOpen && (
@@ -121,7 +121,7 @@ export function Navbar() {
                       <UserCircle className="h-5 w-5 text-blue-600" />
                     </div>
                   </div>
-                  <span className="text-sm font-medium text-slate-700">{user.email}</span>
+                  <span className="text-sm font-medium text-slate-700">{user.name || user.username || user.email}</span>
                 </div>
                 <Button
                   variant="ghost"

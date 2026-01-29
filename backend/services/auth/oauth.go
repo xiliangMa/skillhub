@@ -326,8 +326,9 @@ func GetXiaohongshuAuthURL() (string, error) {
 
 // OAuthUserInfo OAuth用户信息结构
 type OAuthUserInfo struct {
-	Email string `json:"email"`
-	Name  string `json:"name"`
+	Email    string `json:"email"`
+	Name     string `json:"name"`
+	Username string `json:"username"`
 }
 
 // HandleGitHubCallback 处理GitHub OAuth回调
@@ -352,8 +353,9 @@ func HandleGitHubCallback(code, state string) (*OAuthUserInfo, error) {
 	}
 
 	return &OAuthUserInfo{
-		Email: githubUser.Email,
-		Name:  githubUser.Name,
+		Email:    githubUser.Email,
+		Name:     githubUser.Name,
+		Username: githubUser.Login,
 	}, nil
 }
 

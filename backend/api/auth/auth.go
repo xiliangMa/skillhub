@@ -25,6 +25,7 @@ type LoginResponse struct {
 
 // RegisterRequest 注册请求
 type RegisterRequest struct {
+	Name     string `json:"name"`
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=6"`
 }
@@ -108,6 +109,7 @@ func Register(c *gin.Context) {
 	user := models.User{
 		ID:           uuid.New(),
 		Email:        req.Email,
+		Name:         req.Name,
 		PasswordHash: passwordHash,
 		Role:         models.RoleUser,
 		IsActive:     true,
@@ -260,6 +262,8 @@ func GitHubCallback(c *gin.Context) {
 		user = models.User{
 			ID:       uuid.New(),
 			Email:    userInfo.Email,
+			Username: userInfo.Username,
+			Name:     userInfo.Name,
 			PasswordHash: "", // OAuth用户没有密码
 			Role:     models.RoleUser,
 			IsActive: true,
@@ -267,6 +271,16 @@ func GitHubCallback(c *gin.Context) {
 		if err := models.DB.Create(&user).Error; err != nil {
 			c.JSON(500, gin.H{"error": "Failed to create user"})
 			return
+		}
+	} else {
+		// 如果用户已存在但没有名称，更新名称
+		if user.Name == "" && userInfo.Name != "" {
+			user.Name = userInfo.Name
+			models.DB.Save(&user)
+		}
+		if user.Username == "" && userInfo.Username != "" {
+			user.Username = userInfo.Username
+			models.DB.Save(&user)
 		}
 	}
 
@@ -322,6 +336,7 @@ func GoogleCallback(c *gin.Context) {
 		user = models.User{
 			ID:       uuid.New(),
 			Email:    userInfo.Email,
+			Name:     userInfo.Name,
 			PasswordHash: "", // OAuth用户没有密码
 			Role:     models.RoleUser,
 			IsActive: true,
@@ -329,6 +344,12 @@ func GoogleCallback(c *gin.Context) {
 		if err := models.DB.Create(&user).Error; err != nil {
 			c.JSON(500, gin.H{"error": "Failed to create user"})
 			return
+		}
+	} else {
+		// 如果用户已存在但没有名称，更新名称
+		if user.Name == "" && userInfo.Name != "" {
+			user.Name = userInfo.Name
+			models.DB.Save(&user)
 		}
 	}
 

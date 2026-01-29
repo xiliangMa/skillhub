@@ -7,13 +7,11 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { authApi } from "@/lib/api"
 import Link from "next/link"
-import { useI18n } from "@/contexts/i18n-context"
 import { useUser } from "@/contexts/user-context"
 import { Github, LogIn } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
-  const { t, locale } = useI18n()
   const { login } = useUser()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -29,13 +27,9 @@ export default function LoginPage() {
       const response = await authApi.login(email, password)
       login(response.user, response.token)
       
-      if (locale === 'zh') {
-        router.push('/zh')
-      } else {
-        router.push('/')
-      }
+      router.push('/zh')
     } catch (err: any) {
-      setError(t.auth.errorLoginFailed || '登录失败，请检查邮箱和密码')
+      setError('登录失败，请检查邮箱和密码')
     } finally {
       setLoading(false)
     }
@@ -57,10 +51,10 @@ export default function LoginPage() {
       <Card className="w-full max-w-md border-slate-200 bg-white">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center text-slate-900">
-            {t.auth.loginTitle || '登录'}
+            登录
           </CardTitle>
           <CardDescription className="text-center text-slate-600">
-            {t.auth.loginSubtitle || '欢迎回来，请登录您的账户'}
+            欢迎回来，请登录您的账户
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -182,12 +176,12 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium text-slate-700">
-                {t.auth.emailAddress || '邮箱地址'}
+                邮箱地址
               </label>
               <Input
                 id="email"
                 type="email"
-                placeholder={t.auth.emailPlaceholder || 'your@email.com'}
+                placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -198,12 +192,12 @@ export default function LoginPage() {
 
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium text-slate-700">
-                {t.auth.password || '密码'}
+                密码
               </label>
               <Input
                 id="password"
                 type="password"
-                placeholder={t.auth.passwordPlaceholder || '请输入密码'}
+                placeholder="请输入密码"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -213,18 +207,18 @@ export default function LoginPage() {
             </div>
 
             <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white" disabled={loading}>
-              {loading ? t.auth.processing || '处理中...' : (
+              {loading ? '处理中...' : (
                 <>
                   <LogIn className="mr-2 h-4 w-4" />
-                  {t.auth.login || '登录'}
+                  登录
                 </>
               )}
             </Button>
 
             <div className="text-center text-sm text-slate-600">
-              {t.auth.noAccount || '还没有账户？'}
-              <Link href={locale === 'zh' ? '/zh/register' : '/register'} className="text-blue-600 hover:underline font-medium ml-1">
-                {t.auth.register || '立即注册'}
+              还没有账户？
+              <Link href="/zh/register" className="text-blue-600 hover:underline font-medium ml-1">
+                立即注册
               </Link>
             </div>
           </form>

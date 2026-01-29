@@ -78,6 +78,8 @@ export interface Category {
 export interface User {
   id: string
   email: string
+  name?: string
+  username?: string
   role: string
   is_active: boolean
   created_at: string
@@ -160,8 +162,8 @@ export const authApi = {
     return response.data
   },
 
-  register: async (email: string, password: string) => {
-    const response = await api.post<LoginResponse>('/auth/register', { email, password })
+  register: async (email: string, password: string, name?: string) => {
+    const response = await api.post<LoginResponse>('/auth/register', { email, password, name })
     return response.data
   },
 

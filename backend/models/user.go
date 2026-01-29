@@ -16,6 +16,8 @@ const (
 type User struct {
 	ID           uuid.UUID  `gorm:"type:uuid;primary_key;default:uuid_generate_v4()" json:"id"`
 	Email        string     `gorm:"type:varchar(255);uniqueIndex;not null" json:"email"`
+	Username     string     `gorm:"type:varchar(100)" json:"username"`
+	Name         string     `gorm:"type:varchar(100)" json:"name"`
 	PasswordHash string     `gorm:"type:varchar(255)" json:"-"`
 	Role         UserRole   `gorm:"type:varchar(50);default:'user'" json:"role"`
 	IsActive     bool       `gorm:"default:true" json:"is_active"`
