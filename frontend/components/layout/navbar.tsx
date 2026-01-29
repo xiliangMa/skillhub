@@ -24,16 +24,16 @@ export function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-900/60 shadow-lg">
+    <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 shadow-lg">
       <div className="container mx-auto px-4 md:px-6 flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center space-x-2 group">
           <div className="relative">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg blur opacity-60 group-hover:opacity-100 transition duration-500" />
-            <div className="relative w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center transform group-hover:scale-110 transition-transform border border-slate-700">
-              <span className="text-white font-bold text-sm">S</span>
+            <div className="relative w-8 h-8 bg-white rounded-lg flex items-center justify-center transform group-hover:scale-110 transition-transform">
+              <span className="text-slate-900 font-bold text-sm">S</span>
             </div>
           </div>
-          <span className="text-xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+          <span className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
             SkillsHub
           </span>
         </Link>
@@ -43,31 +43,31 @@ export function Navbar() {
           <LanguageSwitcher />
 
           {loading ? (
-            <div className="h-9 w-20 bg-slate-700 animate-pulse rounded"></div>
+            <div className="h-9 w-20 bg-slate-200 animate-pulse rounded"></div>
           ) : user ? (
             <div className="relative">
               <Button
                 variant="ghost"
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center gap-2 hover:bg-slate-800 hover:text-blue-400 transition-colors text-slate-300"
+                className="flex items-center gap-2 hover:bg-slate-100 hover:text-blue-600 transition-colors text-slate-700"
               >
                 <div className="relative">
                   <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur opacity-50" />
-                  <div className="relative w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center border border-slate-700">
-                    <UserCircle className="h-5 w-5 text-blue-400" />
+                  <div className="relative w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                    <UserCircle className="h-5 w-5 text-blue-600" />
                   </div>
                 </div>
                 <span className="text-sm font-medium">{user.name || user.username || user.email}</span>
               </Button>
 
               {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-slate-800/95 backdrop-blur-xl rounded-lg shadow-2xl border border-slate-700/50 py-1 animate-in slide-in-from-top-2 duration-200">
-                  <div className="px-4 py-2 border-b border-slate-700/50 text-xs text-slate-500 font-mono">
+                <div className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-xl rounded-lg shadow-2xl border border-slate-200 py-1 animate-in slide-in-from-top-2 duration-200">
+                  <div className="px-4 py-2 border-b border-slate-200 text-xs text-slate-500 font-mono">
                     {t.nav.loggedIn || '已登录'}
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-red-500/20 flex items-center gap-2 transition-colors"
+                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
                   >
                     <LogOut className="h-4 w-4" />
                     {t.nav.logout || '退出登录'}
@@ -78,7 +78,7 @@ export function Navbar() {
           ) : (
             <>
               <Link href="/login">
-                <Button variant="ghost" className="hover:bg-slate-800 hover:text-blue-400 transition-colors text-slate-300">
+                <Button variant="ghost" className="hover:bg-slate-100 hover:text-blue-600 transition-colors text-slate-700">
                   <User className="h-4 w-4 mr-2" />
                   {t.nav.login}
                 </Button>
@@ -95,7 +95,7 @@ export function Navbar() {
 
         {/* Mobile Menu Toggle */}
         <button
-          className="md:hidden p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-300"
+          className="md:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-700"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           <Menu className="h-6 w-6" />
@@ -104,29 +104,29 @@ export function Navbar() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-700/50 bg-slate-900/95 backdrop-blur-xl">
+        <div className="md:hidden border-t border-slate-200 bg-white/95 backdrop-blur-xl">
           <div className="p-4 space-y-4 animate-in slide-in-from-top duration-300">
             <div className="flex items-center justify-between px-2">
               <LanguageSwitcher />
             </div>
 
             {loading ? (
-              <div className="h-9 bg-slate-700 animate-pulse rounded"></div>
+              <div className="h-9 bg-slate-200 animate-pulse rounded"></div>
             ) : user ? (
               <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2 px-3 py-2 bg-slate-800 rounded-lg border border-slate-700/50">
+                <div className="flex items-center gap-2 px-3 py-2 bg-slate-100 rounded-lg border border-slate-200">
                   <div className="relative">
                     <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur opacity-50" />
-                    <div className="relative w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center border border-slate-700">
-                      <UserCircle className="h-5 w-5 text-blue-400" />
+                    <div className="relative w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                      <UserCircle className="h-5 w-5 text-blue-600" />
                     </div>
                   </div>
-                  <span className="text-sm font-medium text-slate-300">{user.name || user.username || user.email}</span>
+                  <span className="text-sm font-medium text-slate-700">{user.name || user.username || user.email}</span>
                 </div>
                 <Button
                   variant="ghost"
                   onClick={handleLogout}
-                  className="w-full justify-start text-red-400 hover:bg-red-500/20"
+                  className="w-full justify-start text-red-600 hover:bg-red-50"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   {t.nav.logout || '退出登录'}
@@ -135,7 +135,7 @@ export function Navbar() {
             ) : (
               <>
                 <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start text-slate-300 hover:bg-slate-800 hover:text-blue-400">
+                  <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-slate-100 hover:text-blue-600">
                     <User className="h-4 w-4 mr-2" />
                     {t.nav.login}
                   </Button>
