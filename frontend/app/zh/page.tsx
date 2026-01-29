@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SkillCard } from "@/components/skill-card"
-import { Search, TrendingUp, Zap, ArrowRight, Folder } from "lucide-react"
+import { Search, TrendingUp, Zap, ArrowRight, Users, Database, Code2, Cpu, Activity, Download } from "lucide-react"
 import { skillsApi, type Skill } from "@/lib/api"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -13,6 +13,12 @@ export default function ZhPage() {
   const { t } = useI18n()
   const [hotSkills, setHotSkills] = useState<Skill[]>([])
   const [trendingSkills, setTrendingSkills] = useState<Skill[]>([])
+  const [stats, setStats] = useState({
+    totalSkills: 0,
+    totalDownloads: 0,
+    activeUsers: 0,
+    categories: 0
+  })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -24,6 +30,14 @@ export default function ZhPage() {
         ])
         setHotSkills(hot.data || [])
         setTrendingSkills(trending.data || [])
+
+        // Mock stats data
+        setStats({
+          totalSkills: 150,
+          totalDownloads: 50000,
+          activeUsers: 12000,
+          categories: 8
+        })
       } catch (error) {
         console.error('Failed to fetch skills:', error)
       } finally {
@@ -36,107 +50,183 @@ export default function ZhPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-white">
+      {/* Animated background grid */}
+      <div className="fixed inset-0 pointer-events-none opacity-30">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:24px_24px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-50/50 to-transparent" />
+      </div>
+
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-blue-50/50 to-white py-16 md:py-24 px-4 md:px-6">
-        <div className="container mx-auto">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
+      <section className="relative py-20 md:py-32 px-4 md:px-6 overflow-hidden">
+        {/* Floating particles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/30 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute top-40 right-10 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl animate-pulse delay-1000" />
+          <div className="absolute bottom-20 left-1/2 w-80 h-80 bg-cyan-200/30 rounded-full blur-3xl animate-pulse delay-2000" />
+        </div>
+
+        <div className="container mx-auto relative z-10">
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            {/* Tech badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-blue-400/30 bg-blue-100/50 backdrop-blur-sm">
+              <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+              <span className="text-sm text-blue-700 font-mono">AI SKILLS MARKETPLACE v2.0</span>
+            </div>
+
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-gradient-to-r from-slate-900 via-blue-700 to-blue-500 bg-clip-text text-transparent">
               {t.home.heroTitle}
             </h1>
-            <p className="text-lg md:text-xl text-slate-600">
+            <p className="text-xl md:text-2xl text-slate-600 max-w-2xl mx-auto">
               {t.home.heroSubtitle}
             </p>
 
-            <div className="max-w-xl mx-auto w-full">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                <Input
-                  type="search"
-                  placeholder={t.home.searchPlaceholder}
-                  className="h-12 pl-10 text-lg bg-white border-slate-200"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && e.currentTarget.value) {
-                      window.location.href = `/zh/skills?search=${encodeURIComponent(e.currentTarget.value)}`
-                    }
-                  }}
-                />
+            {/* Search bar with tech glow */}
+            <div className="max-w-2xl mx-auto w-full">
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 to-purple-400 rounded-lg blur opacity-40 group-hover:opacity-60 transition duration-500" />
+                <div className="relative flex items-center bg-white/90 backdrop-blur-md rounded-lg border border-slate-200">
+                  <Search className="absolute left-4 h-5 w-5 text-slate-400" />
+                  <Input
+                    type="search"
+                    placeholder={t.home.searchPlaceholder}
+                    className="h-14 pl-12 pr-4 text-lg bg-transparent border-0 focus-visible:ring-0 text-slate-900 placeholder:text-slate-400"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && e.currentTarget.value) {
+                        window.location.href = `/zh/skills?search=${encodeURIComponent(e.currentTarget.value)}`
+                      }
+                    }}
+                  />
+                </div>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Link href="/zh/skills">
-                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                <Button size="lg" className="h-14 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-base font-semibold text-white">
                   {t.home.startBrowsing}
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link href="/categories">
-                <Button variant="outline" size="lg" className="border-slate-300 bg-white hover:bg-slate-50 text-slate-700">
+              <Link href="/zh/categories">
+                <Button variant="outline" size="lg" className="h-14 px-8 border-slate-300 bg-white hover:bg-slate-50 text-base text-slate-700">
                   {t.home.learnMore}
                 </Button>
               </Link>
+            </div>
+
+            {/* Stats bar */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-12">
+              <div className="space-y-2">
+                <div className="flex items-center justify-center gap-2 text-3xl md:text-4xl font-bold text-blue-600">
+                  <Database className="h-6 w-6 md:h-8 md:w-8" />
+                  {stats.totalSkills}+
+                </div>
+                <div className="text-sm text-slate-500 font-mono">AI 技能</div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-center gap-2 text-3xl md:text-4xl font-bold text-purple-600">
+                  <Download className="h-6 w-6 md:h-8 md:w-8" />
+                  {stats.totalDownloads.toLocaleString()}+
+                </div>
+                <div className="text-sm text-slate-500 font-mono">下载量</div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-center gap-2 text-3xl md:text-4xl font-bold text-cyan-600">
+                  <Users className="h-6 w-6 md:h-8 md:w-8" />
+                  {stats.activeUsers.toLocaleString()}+
+                </div>
+                <div className="text-sm text-slate-500 font-mono">活跃用户</div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-center gap-2 text-3xl md:text-4xl font-bold text-green-600">
+                  <Cpu className="h-6 w-6 md:h-8 md:w-8" />
+                  {stats.categories}+
+                </div>
+                <div className="text-sm text-slate-500 font-mono">分类</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-16 px-4 md:px-6 bg-slate-50/50">
-        <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-8 text-slate-900">{t.home.whyChooseUs}</h2>
+      {/* Features with glassmorphism */}
+      <section className="relative py-20 px-4 md:px-6">
+        <div className="container mx-auto relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">{t.home.whyChooseUs}</h2>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">由前沿AI技术驱动</p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-blue-100 text-blue-600">
-                <Zap className="h-6 w-6" />
+            {[
+              {
+                icon: Zap,
+                title: t.features.quickIntegration.title,
+                description: t.features.quickIntegration.description,
+                color: "from-yellow-200/50 to-orange-200/50",
+                iconColor: "text-yellow-600"
+              },
+              {
+                icon: TrendingUp,
+                title: t.features.continuousUpdates.title,
+                description: t.features.continuousUpdates.description,
+                color: "from-blue-200/50 to-purple-200/50",
+                iconColor: "text-blue-600"
+              },
+              {
+                icon: Code2,
+                title: t.features.richCategories.title,
+                description: t.features.richCategories.description,
+                color: "from-cyan-200/50 to-green-200/50",
+                iconColor: "text-cyan-600"
+              }
+            ].map((feature, index) => (
+              <div key={index} className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r opacity-30 group-hover:opacity-50 rounded-xl blur transition duration-500" />
+                <div className="relative h-full bg-gradient-to-br from-white/90 to-blue-50/90 backdrop-blur-sm p-8 rounded-xl border border-slate-200 group-hover:border-blue-300 transition-all">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-white border border-slate-200 mb-6">
+                    <feature.icon className={`h-8 w-8 ${feature.iconColor}`} />
+                  </div>
+                  <h3 className="text-xl font-semibold text-slate-900 mb-3">{feature.title}</h3>
+                  <p className="text-slate-600 leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
               </div>
-              <h3 className="text-lg font-semibold text-slate-900">{t.features.quickIntegration.title}</h3>
-              <p className="text-sm text-slate-600">
-                {t.features.quickIntegration.description}
-              </p>
-            </div>
-
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-purple-100 text-purple-600">
-                <TrendingUp className="h-6 w-6" />
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900">{t.features.continuousUpdates.title}</h3>
-              <p className="text-sm text-slate-600">
-                {t.features.continuousUpdates.description}
-              </p>
-            </div>
-
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-cyan-100 text-cyan-600">
-                <Folder className="h-6 w-6" />
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900">{t.features.richCategories.title}</h3>
-              <p className="text-sm text-slate-600">
-                {t.features.richCategories.description}
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Hot Skills */}
-      <section className="py-16 px-4 md:px-6">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold text-slate-900">{t.home.hotSkills}</h2>
+      <section className="relative py-20 px-4 md:px-6 bg-gradient-to-b from-blue-50/50 to-white">
+        <div className="container mx-auto relative z-10">
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-2">{t.home.hotSkills}</h2>
+              <div className="flex items-center gap-2 text-slate-600">
+                <Activity className="h-5 w-5 text-red-500" />
+                <span className="font-mono">下载最多</span>
+              </div>
+            </div>
             <Link href="/zh/skills">
-              <Button variant="outline" size="sm" className="border-slate-300 bg-white hover:bg-slate-50 text-slate-700">{t.home.learnMore}</Button>
+              <Button variant="outline" size="lg" className="border-slate-300 bg-white hover:bg-slate-50 text-slate-700">
+                {t.home.learnMore}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </Link>
           </div>
 
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-64 bg-slate-200/50 animate-pulse rounded-lg" />
+                <div key={i} className="h-80 bg-slate-200/50 animate-pulse rounded-xl border border-slate-200" />
               ))}
             </div>
           ) : hotSkills.length === 0 ? (
-            <div className="text-center py-12 text-slate-600">
-              {t.home.noHotSkills}
+            <div className="text-center py-16 bg-slate-100/50 rounded-xl border border-slate-200">
+              <Database className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+              <p className="text-slate-600">{t.home.noHotSkills}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -159,24 +249,34 @@ export default function ZhPage() {
       </section>
 
       {/* Trending Skills */}
-      <section className="py-16 px-4 md:px-6 bg-slate-50/50">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold text-slate-900">{t.home.trendingSkills}</h2>
+      <section className="relative py-20 px-4 md:px-6">
+        <div className="container mx-auto relative z-10">
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-2">{t.home.trendingSkills}</h2>
+              <div className="flex items-center gap-2 text-slate-600">
+                <TrendingUp className="h-5 w-5 text-green-500" />
+                <span className="font-mono">本周增长最快</span>
+              </div>
+            </div>
             <Link href="/zh/skills">
-              <Button variant="outline" size="sm" className="border-slate-300 bg-white hover:bg-slate-50 text-slate-700">{t.home.learnMore}</Button>
+              <Button variant="outline" size="lg" className="border-slate-300 bg-white hover:bg-slate-50 text-slate-700">
+                {t.home.learnMore}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </Link>
           </div>
 
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-64 bg-slate-200/50 animate-pulse rounded-lg" />
+                <div key={i} className="h-80 bg-slate-200/50 animate-pulse rounded-xl border border-slate-200" />
               ))}
             </div>
           ) : trendingSkills.length === 0 ? (
-            <div className="text-center py-12 text-slate-600">
-              {t.home.noTrendingSkills}
+            <div className="text-center py-16 bg-slate-100/50 rounded-xl border border-slate-200">
+              <Activity className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+              <p className="text-slate-600">{t.home.noTrendingSkills}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -195,6 +295,23 @@ export default function ZhPage() {
               ))}
             </div>
           )}
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="relative py-20 px-4 md:px-6 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-100/50 via-purple-100/50 to-cyan-100/50" />
+        <div className="container mx-auto relative z-10 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">准备好提升您的AI了吗？</h2>
+          <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-8">
+            加入成千上万正在构建下一代AI应用的开发者行列
+          </p>
+          <Link href="/zh/skills">
+            <Button size="lg" className="h-14 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-base font-semibold text-white">
+              立即开始
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </Link>
         </div>
       </section>
     </div>

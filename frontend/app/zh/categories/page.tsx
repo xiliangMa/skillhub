@@ -73,7 +73,7 @@ export default function CategoriesPage() {
               const IconComponent = info.icon
 
               return (
-                <Link key={category.id} href={`/skills?category=${category.id}`}>
+                <Link key={category.id} href={`/zh/skills?category=${category.id}`}>
                   <Card className="h-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border-slate-200 bg-white cursor-pointer">
                     <CardHeader>
                       <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${info.color} flex items-center justify-center mb-4`}>
@@ -108,7 +108,7 @@ export default function CategoriesPage() {
               const IconComponent = info.icon
 
               return (
-                <Link key={index} href={`/skills?category=${category.name}`}>
+                <Link key={index} href={`/zh/skills?category=${category.name}`}>
                   <Card className="h-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border-slate-200 bg-white cursor-pointer">
                     <CardHeader>
                       <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${info.color} flex items-center justify-center mb-4`}>
@@ -142,7 +142,7 @@ export default function CategoriesPage() {
           <p className="text-xl text-slate-600">
             浏览我们广泛的AI技能集合，找到您真正需要的
           </p>
-          <Link href="/skills">
+          <Link href="/zh/skills">
             <Button size="lg" className="h-14 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-base font-semibold text-white">
               浏览所有技能
               <ArrowRight className="ml-2 h-5 w-5" />
