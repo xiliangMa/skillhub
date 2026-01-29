@@ -1,16 +1,20 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { api, type User, type Order, type Analytics } from "@/lib/api"
+import api, { authApi, type User, type Order, type Analytics } from "@/lib/api"
 import { Users, DollarSign, ShoppingCart, TrendingUp } from "lucide-react"
 import { useI18n } from "@/contexts/i18n-context"
+import { useUser } from "@/contexts/user-context"
 
 export default function AdminDashboard() {
   const { t } = useI18n()
+  const router = useRouter()
+  const { user, loading: userLoading } = useUser()
   const [activeTab, setActiveTab] = useState<'overview' | 'skills' | 'users' | 'orders'>('overview')
   const [loading, setLoading] = useState(true)
   const [users, setUsers] = useState<User[]>([])
@@ -18,8 +22,29 @@ export default function AdminDashboard() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null)
 
   useEffect(() => {
-    fetchData()
-  }, [activeTab])
+    // 等待用户信息加载完成
+    if (userLoading) {
+      return
+    }
+
+    // 未登录时跳转到登录页
+    if (user === null) {
+      router.push('/login')
+      return
+    }
+
+    // 非管理员跳转到首页
+    if (user.role !== 'admin') {
+      router.push('/')
+      return
+    }
+  }, [user, userLoading, router])
+
+  useEffect(() => {
+    if (user && user.role === 'admin') {
+      fetchData()
+    }
+  }, [activeTab, user])
 
   const fetchData = async () => {
     setLoading(true)
