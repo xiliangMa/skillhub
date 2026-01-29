@@ -1,0 +1,952 @@
+basePath: /api/v1
+definitions:
+  admin.AnalyticsData:
+    properties:
+      active_skills:
+        type: integer
+      free_skills:
+        type: integer
+      paid_skills:
+        type: integer
+      recent_orders:
+        items:
+          $ref: '#/definitions/admin.Order'
+        type: array
+      today_orders:
+        type: integer
+      today_revenue:
+        type: number
+      total_orders:
+        type: integer
+      total_revenue:
+        type: number
+      total_skills:
+        type: integer
+      total_users:
+        type: integer
+    type: object
+  admin.Order:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      order_no:
+        type: string
+      status:
+        type: string
+      total_amount:
+        type: number
+      user_email:
+        type: string
+    type: object
+  admin.UpdateSkillRequest:
+    properties:
+      category_id:
+        type: string
+      description:
+        type: string
+      is_active:
+        type: boolean
+      name:
+        type: string
+      price:
+        type: number
+      price_type:
+        type: string
+    type: object
+  auth.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  auth.LoginResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+    type: object
+  auth.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.OAuthProvider:
+    properties:
+      created_at:
+        type: string
+      expires_at:
+        type: string
+      id:
+        type: string
+      provider:
+        type: string
+      provider_user_id:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        type: string
+    type: object
+  models.Order:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/models.OrderItem'
+        type: array
+      order_no:
+        type: string
+      paid_at:
+        type: string
+      payment_method:
+        type: string
+      status:
+        $ref: '#/definitions/models.OrderStatus'
+      total_amount:
+        type: number
+      transactions:
+        items:
+          $ref: '#/definitions/models.Transaction'
+        type: array
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        type: string
+    type: object
+  models.OrderItem:
+    properties:
+      id:
+        type: string
+      order:
+        $ref: '#/definitions/models.Order'
+      order_id:
+        type: string
+      price:
+        type: number
+      quantity:
+        type: integer
+      skill:
+        $ref: '#/definitions/models.Skill'
+      skill_id:
+        type: string
+    type: object
+  models.OrderStatus:
+    enum:
+    - pending
+    - paid
+    - cancelled
+    - refunded
+    type: string
+    x-enum-varnames:
+    - OrderStatusPending
+    - OrderStatusPaid
+    - OrderStatusCancelled
+    - OrderStatusRefunded
+  models.PriceType:
+    enum:
+    - free
+    - paid
+    type: string
+    x-enum-varnames:
+    - PriceTypeFree
+    - PriceTypePaid
+  models.Skill:
+    properties:
+      analytics:
+        items:
+          $ref: '#/definitions/models.SkillAnalytics'
+        type: array
+      category:
+        allOf:
+        - $ref: '#/definitions/models.SkillCategory'
+        description: Relations
+      category_id:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      downloads_count:
+        type: integer
+      forks_count:
+        type: integer
+      github_url:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      last_sync_at:
+        type: string
+      name:
+        type: string
+      order_items:
+        items:
+          $ref: '#/definitions/models.OrderItem'
+        type: array
+      price:
+        type: number
+      price_type:
+        $ref: '#/definitions/models.PriceType'
+      purchases_count:
+        type: integer
+      rating:
+        type: number
+      stars_count:
+        type: integer
+      tags:
+        items:
+          $ref: '#/definitions/models.SkillTag'
+        type: array
+      translations:
+        items:
+          $ref: '#/definitions/models.SkillTranslation'
+        type: array
+      updated_at:
+        type: string
+    type: object
+  models.SkillAnalytics:
+    properties:
+      date:
+        type: string
+      downloads_count:
+        type: integer
+      id:
+        type: string
+      purchases_count:
+        type: integer
+      skill:
+        $ref: '#/definitions/models.Skill'
+      skill_id:
+        type: string
+      views_count:
+        type: integer
+    type: object
+  models.SkillCategory:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/models.SkillCategory'
+        type: array
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      parent:
+        $ref: '#/definitions/models.SkillCategory'
+      parent_id:
+        type: string
+      skills:
+        items:
+          $ref: '#/definitions/models.Skill'
+        type: array
+      sort_order:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.SkillTag:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  models.SkillTranslation:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      language:
+        type: string
+      skill:
+        $ref: '#/definitions/models.Skill'
+      skill_id:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.Transaction:
+    properties:
+      amount:
+        type: number
+      created_at:
+        type: string
+      id:
+        type: string
+      order:
+        $ref: '#/definitions/models.Order'
+      order_id:
+        type: string
+      payment_channel:
+        type: string
+      raw_response:
+        type: string
+      status:
+        $ref: '#/definitions/models.TransactionStatus'
+      transaction_id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.TransactionStatus:
+    enum:
+    - pending
+    - success
+    - failed
+    type: string
+    x-enum-varnames:
+    - TransactionStatusPending
+    - TransactionStatusSuccess
+    - TransactionStatusFailed
+  models.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      oauth_providers:
+        items:
+          $ref: '#/definitions/models.OAuthProvider'
+        type: array
+      orders:
+        items:
+          $ref: '#/definitions/models.Order'
+        type: array
+      profile:
+        allOf:
+        - $ref: '#/definitions/models.UserProfile'
+        description: Relations
+      role:
+        $ref: '#/definitions/models.UserRole'
+      updated_at:
+        type: string
+    type: object
+  models.UserProfile:
+    properties:
+      avatar_url:
+        type: string
+      bio:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      preferences:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        type: string
+    type: object
+  models.UserRole:
+    enum:
+    - user
+    - admin
+    type: string
+    x-enum-varnames:
+    - RoleUser
+    - RoleAdmin
+  payment.CreateOrderRequest:
+    properties:
+      skill_id:
+        type: string
+    required:
+    - skill_id
+    type: object
+  skills.ListSkillsResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/models.Skill'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Skills商店SaaS平台后端API文档
+  title: Skills商店SaaS平台API
+  version: "1.0"
+paths:
+  /admin/analytics:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/admin.AnalyticsData'
+      security:
+      - Bearer: []
+      summary: 获取统计数据
+      tags:
+      - admin
+  /admin/orders:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - Bearer: []
+      summary: 管理员查看所有订单
+      tags:
+      - admin
+  /admin/skills:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - Bearer: []
+      summary: 管理员查看技能列表
+      tags:
+      - admin
+  /admin/skills/{id}:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: 技能ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 更新数据
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/admin.UpdateSkillRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - Bearer: []
+      summary: 管理员更新技能
+      tags:
+      - admin
+  /admin/users:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - Bearer: []
+      summary: 管理员查看用户列表
+      tags:
+      - admin
+  /auth/callback/feishu:
+    get:
+      consumes:
+      - application/json
+      description: 飞书OAuth登录回调
+      parameters:
+      - description: OAuth授权码
+        in: query
+        name: code
+        required: true
+        type: string
+      - description: 状态参数
+        in: query
+        name: state
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: 飞书OAuth回调
+      tags:
+      - auth
+  /auth/callback/github:
+    get:
+      description: GitHub OAuth登录回调
+      parameters:
+      - description: Authorization code
+        in: query
+        name: code
+        required: true
+        type: string
+      responses: {}
+      summary: GitHub OAuth回调
+      tags:
+      - auth
+  /auth/callback/google:
+    get:
+      description: Google OAuth登录回调
+      parameters:
+      - description: Authorization code
+        in: query
+        name: code
+        required: true
+        type: string
+      responses: {}
+      summary: Google OAuth回调
+      tags:
+      - auth
+  /auth/callback/wechat:
+    get:
+      consumes:
+      - application/json
+      description: 微信OAuth登录回调
+      parameters:
+      - description: OAuth授权码
+        in: query
+        name: code
+        required: true
+        type: string
+      - description: 状态参数
+        in: query
+        name: state
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: 微信OAuth回调
+      tags:
+      - auth
+  /auth/callback/xiaohongshu:
+    get:
+      consumes:
+      - application/json
+      description: 小红书OAuth登录回调
+      parameters:
+      - description: OAuth授权码
+        in: query
+        name: code
+        required: true
+        type: string
+      - description: 状态参数
+        in: query
+        name: state
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      summary: 小红书OAuth回调
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 用户邮箱密码登录
+      parameters:
+      - description: 登录信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginResponse'
+      summary: 用户登录
+      tags:
+      - auth
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前登录用户的信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      security:
+      - Bearer: []
+      summary: 获取当前用户信息
+      tags:
+      - auth
+  /auth/oauth/{provider}:
+    get:
+      description: 使用OAuth第三方登录
+      parameters:
+      - description: OAuth provider (github, google)
+        in: path
+        name: provider
+        required: true
+        type: string
+      responses: {}
+      summary: OAuth登录
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: 新用户注册
+      parameters:
+      - description: 注册信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginResponse'
+      summary: 用户注册
+      tags:
+      - auth
+  /payment/callback/alipay:
+    post:
+      consumes:
+      - application/json
+      description: 支付宝支付成功后的回调
+      produces:
+      - application/json
+      responses: {}
+      summary: 支付宝支付回调
+      tags:
+      - payment
+  /payment/orders:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前用户的订单列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - Bearer: []
+      summary: 获取用户订单
+      tags:
+      - payment
+    post:
+      consumes:
+      - application/json
+      description: 创建购买订单
+      parameters:
+      - description: 订单信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/payment.CreateOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Order'
+      security:
+      - Bearer: []
+      summary: 创建订单
+      tags:
+      - payment
+  /payment/payment/orders/{id}/pay:
+    post:
+      consumes:
+      - application/json
+      description: 获取订单的支付链接
+      parameters:
+      - description: 订单ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - Bearer: []
+      summary: 获取支付链接
+      tags:
+      - payment
+  /skills:
+    get:
+      consumes:
+      - application/json
+      description: 分页获取技能列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 分类ID
+        in: query
+        name: category_id
+        type: string
+      - description: 搜索关键词
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/skills.ListSkillsResponse'
+      summary: 获取技能列表
+      tags:
+      - skills
+  /skills/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取技能详细信息
+      parameters:
+      - description: 技能ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Skill'
+      summary: 获取技能详情
+      tags:
+      - skills
+  /skills/{id}/download:
+    get:
+      consumes:
+      - application/json
+      description: 记录下载并返回下载链接
+      parameters:
+      - description: 技能ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+      summary: 下载技能
+      tags:
+      - skills
+  /skills/{id}/purchase:
+    post:
+      consumes:
+      - application/json
+      description: 创建订单并处理支付
+      parameters:
+      - description: 技能ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+      summary: 购买技能
+      tags:
+      - skills
+  /skills/categories:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有技能分类
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.SkillCategory'
+            type: array
+      summary: 获取分类列表
+      tags:
+      - skills
+  /skills/hot:
+    get:
+      consumes:
+      - application/json
+      description: 根据下载量获取热门技能
+      parameters:
+      - default: 10
+        description: 返回数量
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Skill'
+            type: array
+      summary: 获取热门技能
+      tags:
+      - skills
+  /skills/trending:
+    get:
+      consumes:
+      - application/json
+      description: 根据评分和最近更新获取趋势技能
+      parameters:
+      - default: 10
+        description: 返回数量
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Skill'
+            type: array
+      summary: 获取趋势技能
+      tags:
+      - skills
+swagger: "2.0"

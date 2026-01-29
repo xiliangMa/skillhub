@@ -1,112 +1,318 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { SkillCardSkeleton } from "@/components/skill-card-skeleton"
-import { Search, TrendingUp, Zap, ArrowRight, Folder } from "lucide-react"
+import { SkillCard } from "@/components/skill-card"
+import { Search, TrendingUp, Zap, ArrowRight, Users, Database, Code2, Cpu, Activity, Download } from "lucide-react"
+import { skillsApi, type Skill } from "@/lib/api"
+import Link from "next/link"
+import { useEffect, useState } from "react"
+import { useI18n } from "@/contexts/i18n-context"
 
 export default function Home() {
+  const { t } = useI18n()
+  const [hotSkills, setHotSkills] = useState<Skill[]>([])
+  const [trendingSkills, setTrendingSkills] = useState<Skill[]>([])
+  const [stats, setStats] = useState({
+    totalSkills: 0,
+    totalDownloads: 0,
+    activeUsers: 0,
+    categories: 0
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [hot, trending] = await Promise.all([
+          skillsApi.getHot(4),
+          skillsApi.getTrending(4),
+        ])
+        setHotSkills(hot.data || [])
+        setTrendingSkills(trending.data || [])
+
+        // Mock stats data
+        setStats({
+          totalSkills: 150,
+          totalDownloads: 50000,
+          activeUsers: 12000,
+          categories: 8
+        })
+      } catch (error) {
+        console.error('Failed to fetch skills:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Animated background grid */}
+      <div className="fixed inset-0 pointer-events-none opacity-20">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-950/10 to-transparent" />
+      </div>
+
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-background to-muted/20 py-16 md:py-24 px-4 md:px-6">
-        <div className="container mx-auto">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-              Discover and Purchase AI Skills
+      <section className="relative py-20 md:py-32 px-4 md:px-6 overflow-hidden">
+        {/* Floating particles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute top-40 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+          <div className="absolute bottom-20 left-1/2 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-2000" />
+        </div>
+
+        <div className="container mx-auto relative z-10">
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            {/* Tech badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-blue-500/30 bg-blue-500/10 backdrop-blur-sm">
+              <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+              <span className="text-sm text-blue-300 font-mono">AI SKILLS MARKETPLACE v2.0</span>
+            </div>
+
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-gradient-to-r from-white via-blue-200 to-blue-400 bg-clip-text text-transparent">
+              {t.home.heroTitle}
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground">
-              The best AI assistant skills marketplace for your applications
+            <p className="text-xl md:text-2xl text-slate-400 max-w-2xl mx-auto">
+              {t.home.heroSubtitle}
             </p>
 
-            <div className="max-w-xl mx-auto w-full">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search skills..."
-                  className="h-12 pl-10 text-lg"
-                />
+            {/* Search bar with tech glow */}
+            <div className="max-w-2xl mx-auto w-full">
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-500" />
+                <div className="relative flex items-center bg-slate-900/80 backdrop-blur-md rounded-lg border border-slate-700/50">
+                  <Search className="absolute left-4 h-5 w-5 text-slate-400" />
+                  <Input
+                    type="search"
+                    placeholder={t.home.searchPlaceholder}
+                    className="h-14 pl-12 pr-4 text-lg bg-transparent border-0 focus-visible:ring-0 text-white placeholder:text-slate-500"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && e.currentTarget.value) {
+                        window.location.href = `/skills?search=${encodeURIComponent(e.currentTarget.value)}`
+                      }
+                    }}
+                  />
+                </div>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button size="lg">
-                Start Browsing
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="lg">
-                Learn More
-              </Button>
+              <Link href="/skills">
+                <Button size="lg" className="h-14 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-base font-semibold">
+                  {t.home.startBrowsing}
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link href="/categories">
+                <Button variant="outline" size="lg" className="h-14 px-8 border-slate-600 bg-slate-800/50 hover:bg-slate-800 text-base">
+                  {t.home.learnMore}
+                </Button>
+              </Link>
+            </div>
+
+            {/* Stats bar */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-12">
+              <div className="space-y-2">
+                <div className="flex items-center justify-center gap-2 text-3xl md:text-4xl font-bold text-blue-400">
+                  <Database className="h-6 w-6 md:h-8 md:w-8" />
+                  {stats.totalSkills}+
+                </div>
+                <div className="text-sm text-slate-400 font-mono">AI SKILLS</div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-center gap-2 text-3xl md:text-4xl font-bold text-purple-400">
+                  <Download className="h-6 w-6 md:h-8 md:w-8" />
+                  {stats.totalDownloads.toLocaleString()}+
+                </div>
+                <div className="text-sm text-slate-400 font-mono">DOWNLOADS</div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-center gap-2 text-3xl md:text-4xl font-bold text-cyan-400">
+                  <Users className="h-6 w-6 md:h-8 md:w-8" />
+                  {stats.activeUsers.toLocaleString()}+
+                </div>
+                <div className="text-sm text-slate-400 font-mono">ACTIVE USERS</div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-center gap-2 text-3xl md:text-4xl font-bold text-green-400">
+                  <Cpu className="h-6 w-6 md:h-8 md:w-8" />
+                  {stats.categories}+
+                </div>
+                <div className="text-sm text-slate-400 font-mono">CATEGORIES</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-16 px-4 md:px-6 bg-muted/20">
-        <div className="container mx-auto">
+      {/* Features with glassmorphism */}
+      <section className="relative py-20 px-4 md:px-6">
+        <div className="container mx-auto relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">{t.home.whyChooseUs}</h2>
+            <p className="text-lg text-slate-400 max-w-2xl mx-auto">Powered by cutting-edge AI technology</p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
-                <Zap className="h-6 w-6" />
+            {[
+              {
+                icon: Zap,
+                title: t.features.quickIntegration.title,
+                description: t.features.quickIntegration.description,
+                color: "from-yellow-500/20 to-orange-500/20",
+                iconColor: "text-yellow-400"
+              },
+              {
+                icon: TrendingUp,
+                title: t.features.continuousUpdates.title,
+                description: t.features.continuousUpdates.description,
+                color: "from-blue-500/20 to-purple-500/20",
+                iconColor: "text-blue-400"
+              },
+              {
+                icon: Code2,
+                title: t.features.richCategories.title,
+                description: t.features.richCategories.description,
+                color: "from-cyan-500/20 to-green-500/20",
+                iconColor: "text-cyan-400"
+              }
+            ].map((feature, index) => (
+              <div key={index} className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r opacity-20 group-hover:opacity-40 rounded-xl blur transition duration-500" />
+                <div className="relative h-full bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-sm p-8 rounded-xl border border-slate-700/50 group-hover:border-slate-600/50 transition-all">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700/50 mb-6">
+                    <feature.icon className={`h-8 w-8 ${feature.iconColor}`} />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
+                  <p className="text-slate-400 leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
               </div>
-              <h3 className="text-lg font-semibold">Quick Integration</h3>
-              <p className="text-sm text-muted-foreground">
-                Plug and play, deploy instantly to your applications
-              </p>
-            </div>
-
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
-                <TrendingUp className="h-6 w-6" />
-              </div>
-              <h3 className="text-lg font-semibold">Continuous Updates</h3>
-              <p className="text-sm text-muted-foreground">
-                Regular updates to keep up with the latest technology
-              </p>
-            </div>
-
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
-                <Folder className="h-6 w-6" />
-              </div>
-              <h3 className="text-lg font-semibold">Rich Categories</h3>
-              <p className="text-sm text-muted-foreground">
-                Covering various AI skills to meet different needs
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Hot Skills */}
-      <section className="py-16 px-4 md:px-6">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold">Hot Skills</h2>
-            <Button variant="outline" size="sm">View All</Button>
+      <section className="relative py-20 px-4 md:px-6 bg-gradient-to-b from-slate-900/50 to-slate-900">
+        <div className="container mx-auto relative z-10">
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-2">{t.home.hotSkills}</h2>
+              <div className="flex items-center gap-2 text-slate-400">
+                <Activity className="h-5 w-5 text-red-400" />
+                <span className="font-mono">Most downloaded skills</span>
+              </div>
+            </div>
+            <Link href="/skills">
+              <Button variant="outline" size="lg" className="border-slate-600 bg-slate-800/50 hover:bg-slate-800">
+                {t.home.learnMore}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <SkillCardSkeleton key={i} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-80 bg-slate-800/50 animate-pulse rounded-xl border border-slate-700/50" />
+              ))}
+            </div>
+          ) : hotSkills.length === 0 ? (
+            <div className="text-center py-16 bg-slate-800/30 rounded-xl border border-slate-700/50">
+              <Database className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+              <p className="text-slate-400">{t.home.noHotSkills}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {hotSkills.map((skill) => (
+                <SkillCard
+                  key={skill.id}
+                  id={skill.id}
+                  name={skill.name}
+                  description={skill.description}
+                  stars={skill.stars_count}
+                  forks={skill.forks_count}
+                  downloads={skill.downloads_count}
+                  price={skill.price}
+                  priceType={skill.price_type}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
       {/* Trending Skills */}
-      <section className="py-16 px-4 md:px-6 bg-muted/20">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold">Trending Skills</h2>
-            <Button variant="outline" size="sm">View All</Button>
+      <section className="relative py-20 px-4 md:px-6">
+        <div className="container mx-auto relative z-10">
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-2">{t.home.trendingSkills}</h2>
+              <div className="flex items-center gap-2 text-slate-400">
+                <TrendingUp className="h-5 w-5 text-green-400" />
+                <span className="font-mono">Fastest growing this week</span>
+              </div>
+            </div>
+            <Link href="/skills">
+              <Button variant="outline" size="lg" className="border-slate-600 bg-slate-800/50 hover:bg-slate-800">
+                {t.home.learnMore}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <SkillCardSkeleton key={i} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-80 bg-slate-800/50 animate-pulse rounded-xl border border-slate-700/50" />
+              ))}
+            </div>
+          ) : trendingSkills.length === 0 ? (
+            <div className="text-center py-16 bg-slate-800/30 rounded-xl border border-slate-700/50">
+              <Activity className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+              <p className="text-slate-400">{t.home.noTrendingSkills}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {trendingSkills.map((skill) => (
+                <SkillCard
+                  key={skill.id}
+                  id={skill.id}
+                  name={skill.name}
+                  description={skill.description}
+                  stars={skill.stars_count}
+                  forks={skill.forks_count}
+                  downloads={skill.downloads_count}
+                  price={skill.price}
+                  priceType={skill.price_type}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="relative py-20 px-4 md:px-6 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-cyan-600/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950" />
+        <div className="container mx-auto relative z-10 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ready to Supercharge Your AI?</h2>
+          <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-8">
+            Join thousands of developers building the next generation of AI applications
+          </p>
+          <Link href="/skills">
+            <Button size="lg" className="h-14 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-base font-semibold">
+              Get Started Now
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </Link>
         </div>
       </section>
     </div>

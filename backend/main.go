@@ -7,8 +7,9 @@ import (
 	"skillhub/api/payment"
 	"skillhub/api/skills"
 	"skillhub/config"
-	// "skillhub/docs"
+	_ "skillhub/docs"
 	"skillhub/middleware"
+	"skillhub/mock"
 	"skillhub/models"
 	svcauth "skillhub/services/auth"
 	// "skillhub/services/payment"
@@ -32,6 +33,11 @@ func main() {
 	// 初始化数据库
 	if err := models.InitDB(); err != nil {
 		log.Fatal("Failed to initialize database:", err)
+	}
+
+	// 初始化mock数据
+	if err := mock.SeedData(); err != nil {
+		log.Printf("Warning: Failed to seed mock data: %v", err)
 	}
 
 	// 初始化OAuth
@@ -81,12 +87,17 @@ func main() {
 			auth.GET("/oauth/:provider", authhandler.OAuthLogin)
 			auth.GET("/callback/github", authhandler.GitHubCallback)
 			auth.GET("/callback/google", authhandler.GoogleCallback)
+			auth.GET("/callback/wechat", authhandler.WeChatCallback)
+			auth.GET("/callback/feishu", authhandler.FeishuCallback)
+			auth.GET("/callback/xiaohongshu", authhandler.XiaohongshuCallback)
 		}
 
 		skillsGroup := v1.Group("/skills")
 		{
 			skillsGroup.GET("", skills.ListSkills)
 			skillsGroup.GET("/:id", skills.GetSkill)
+			skillsGroup.GET("/:id/download", skills.DownloadSkill)
+			skillsGroup.POST("/:id/purchase", middleware.AuthMiddleware(), skills.PurchaseSkill)
 			skillsGroup.GET("/categories", skills.GetCategories)
 			skillsGroup.GET("/hot", skills.GetHotSkills)
 			skillsGroup.GET("/trending", skills.GetTrendingSkills)

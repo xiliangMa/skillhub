@@ -7,10 +7,8 @@ import { Search, TrendingUp, Zap, ArrowRight, Folder } from "lucide-react"
 import { skillsApi, type Skill } from "@/lib/api"
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { useI18n } from "@/contexts/i18n-context"
 
-export default function ZhPage() {
-  const { t } = useI18n()
+export default function Home() {
   const [hotSkills, setHotSkills] = useState<Skill[]>([])
   const [trendingSkills, setTrendingSkills] = useState<Skill[]>([])
   const [loading, setLoading] = useState(true)
@@ -41,10 +39,10 @@ export default function ZhPage() {
         <div className="container mx-auto">
           <div className="max-w-3xl mx-auto text-center space-y-6">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-              {t.home.heroTitle}
+              Discover and Purchase AI Skills
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground">
-              {t.home.heroSubtitle}
+              The best AI assistant skills marketplace for your applications
             </p>
 
             <div className="max-w-xl mx-auto w-full">
@@ -52,11 +50,11 @@ export default function ZhPage() {
                 <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder={t.home.searchPlaceholder}
+                  placeholder="搜索技能..."
                   className="h-12 pl-10 text-lg"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && e.currentTarget.value) {
-                      window.location.href = `/zh/skills?search=${encodeURIComponent(e.currentTarget.value)}`
+                      window.location.href = `/skills?search=${encodeURIComponent(e.currentTarget.value)}`
                     }
                   }}
                 />
@@ -64,15 +62,15 @@ export default function ZhPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Link href="/zh/skills">
+              <Link href="/skills">
                 <Button size="lg">
-                  {t.home.startBrowsing}
+                  Start Browsing
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/categories">
                 <Button variant="outline" size="lg">
-                  {t.home.learnMore}
+                  Explore Categories
                 </Button>
               </Link>
             </div>
@@ -83,15 +81,14 @@ export default function ZhPage() {
       {/* Features */}
       <section className="py-16 px-4 md:px-6 bg-muted/20">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-8">{t.home.whyChooseUs}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center space-y-2">
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
                 <Zap className="h-6 w-6" />
               </div>
-              <h3 className="text-lg font-semibold">{t.features.quickIntegration.title}</h3>
+              <h3 className="text-lg font-semibold">Quick Integration</h3>
               <p className="text-sm text-muted-foreground">
-                {t.features.quickIntegration.description}
+                Plug and play, deploy instantly to your applications
               </p>
             </div>
 
@@ -99,9 +96,9 @@ export default function ZhPage() {
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
                 <TrendingUp className="h-6 w-6" />
               </div>
-              <h3 className="text-lg font-semibold">{t.features.continuousUpdates.title}</h3>
+              <h3 className="text-lg font-semibold">Continuous Updates</h3>
               <p className="text-sm text-muted-foreground">
-                {t.features.continuousUpdates.description}
+                Regular updates to keep up with latest technology
               </p>
             </div>
 
@@ -109,9 +106,9 @@ export default function ZhPage() {
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary/10 text-primary">
                 <Folder className="h-6 w-6" />
               </div>
-              <h3 className="text-lg font-semibold">{t.features.richCategories.title}</h3>
+              <h3 className="text-lg font-semibold">Rich Categories</h3>
               <p className="text-sm text-muted-foreground">
-                {t.features.richCategories.description}
+                Covering various AI skills to meet different needs
               </p>
             </div>
           </div>
@@ -122,9 +119,9 @@ export default function ZhPage() {
       <section className="py-16 px-4 md:px-6">
         <div className="container mx-auto">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold">{t.home.hotSkills}</h2>
-            <Link href="/zh/skills">
-              <Button variant="outline" size="sm">{t.home.learnMore}</Button>
+            <h2 className="text-3xl font-bold">Hot Skills</h2>
+            <Link href="/skills">
+              <Button variant="outline" size="sm">View All</Button>
             </Link>
           </div>
 
@@ -136,7 +133,7 @@ export default function ZhPage() {
             </div>
           ) : hotSkills.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              {t.home.noHotSkills}
+              No hot skills available yet
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -162,9 +159,9 @@ export default function ZhPage() {
       <section className="py-16 px-4 md:px-6 bg-muted/20">
         <div className="container mx-auto">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold">{t.home.trendingSkills}</h2>
-            <Link href="/zh/skills">
-              <Button variant="outline" size="sm">{t.home.learnMore}</Button>
+            <h2 className="text-3xl font-bold">Trending Skills</h2>
+            <Link href="/skills">
+              <Button variant="outline" size="sm">View All</Button>
             </Link>
           </div>
 
@@ -176,7 +173,7 @@ export default function ZhPage() {
             </div>
           ) : trendingSkills.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              {t.home.noTrendingSkills}
+              No trending skills available yet
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

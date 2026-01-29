@@ -1,9 +1,11 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
 	"skillhub/lib"
 	"skillhub/models"
+	svcauth "skillhub/services/auth"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -165,17 +167,60 @@ func GetMe(c *gin.Context) {
 
 // OAuthLogin OAuth登录
 // @Summary OAuth登录
-// @Description OAuth第三方登录
+// @Description OAuth第三方登录，支持微信、飞书、小红书、GitHub、Google
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param provider path string true "OAuth提供商"
+// @Param provider path string true "OAuth提供商: wechat, feishu, xiaohongshu, github, google"
 // @Router /auth/oauth/{provider} [get]
 func OAuthLogin(c *gin.Context) {
 	provider := c.Param("provider")
+	
+	// 支持的OAuth提供商
+	validProviders := map[string]bool{
+		"wechat":      true,
+		"feishu":      true,
+		"xiaohongshu": true,
+		"github":      true,
+		"google":      true,
+	}
+
+	if !validProviders[provider] {
+		c.JSON(400, gin.H{
+			"error": "Unsupported OAuth provider",
+			"message": fmt.Sprintf("Provider '%s' is not supported. Valid providers: wechat, feishu, xiaohongshu, github, google", provider),
+		})
+		return
+	}
+
+	var oauthURL string
+	var err error
+
+	switch provider {
+	case "github":
+		oauthURL, err = svcauth.GetGitHubAuthURL()
+	case "google":
+		oauthURL, err = svcauth.GetGoogleAuthURL()
+	case "wechat":
+		oauthURL, err = svcauth.GetWeChatAuthURL()
+	case "feishu":
+		oauthURL, err = svcauth.GetFeishuAuthURL()
+	case "xiaohongshu":
+		oauthURL, err = svcauth.GetXiaohongshuAuthURL()
+	}
+
+	if err != nil {
+		c.JSON(500, gin.H{
+			"error": "Failed to generate OAuth URL",
+			"message": err.Error(),
+		})
+		return
+	}
+
 	c.JSON(200, gin.H{
-		"message": "OAuthLogin endpoint - temporarily disabled",
+		"message": "Redirect to OAuth provider",
 		"provider": provider,
+		"auth_url": oauthURL,
 	})
 }
 
@@ -185,9 +230,60 @@ func OAuthLogin(c *gin.Context) {
 // @Tags auth
 // @Accept json
 // @Produce json
+// @Param code query string true "OAuth授权码"
+// @Param state query string true "状态参数"
 // @Router /auth/callback/github [get]
 func GitHubCallback(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "GitHubCallback endpoint - temporarily disabled"})
+	code := c.Query("code")
+	state := c.Query("state")
+
+	if code == "" {
+		c.JSON(400, gin.H{"error": "Missing authorization code"})
+		return
+	}
+
+	// 使用GitHub OAuth服务处理回调
+	userInfo, err := svcauth.HandleGitHubCallback(code, state)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"error": "Failed to handle GitHub callback",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// 查找或创建用户
+	var user models.User
+	err = models.DB.Where("email = ?", userInfo.Email).First(&user).Error
+	if err != nil {
+		// 创建新用户
+		user = models.User{
+			ID:       uuid.New(),
+			Email:    userInfo.Email,
+			PasswordHash: "", // OAuth用户没有密码
+			Role:     models.RoleUser,
+			IsActive: true,
+		}
+		if err := models.DB.Create(&user).Error; err != nil {
+			c.JSON(500, gin.H{"error": "Failed to create user"})
+			return
+		}
+	}
+
+	// 生成JWT token
+	token, err := lib.GenerateToken(user.ID, user.Email, string(user.Role))
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
+	// 清除敏感信息
+	user.PasswordHash = ""
+
+	c.JSON(200, LoginResponse{
+		Token: token,
+		User:  user,
+	})
 }
 
 // GoogleCallback Google回调
@@ -196,7 +292,244 @@ func GitHubCallback(c *gin.Context) {
 // @Tags auth
 // @Accept json
 // @Produce json
+// @Param code query string true "OAuth授权码"
+// @Param state query string true "状态参数"
 // @Router /auth/callback/google [get]
 func GoogleCallback(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "GoogleCallback endpoint - temporarily disabled"})
+	code := c.Query("code")
+	state := c.Query("state")
+
+	if code == "" {
+		c.JSON(400, gin.H{"error": "Missing authorization code"})
+		return
+	}
+
+	// 使用Google OAuth服务处理回调
+	userInfo, err := svcauth.HandleGoogleCallback(code, state)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"error": "Failed to handle Google callback",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// 查找或创建用户
+	var user models.User
+	err = models.DB.Where("email = ?", userInfo.Email).First(&user).Error
+	if err != nil {
+		// 创建新用户
+		user = models.User{
+			ID:       uuid.New(),
+			Email:    userInfo.Email,
+			PasswordHash: "", // OAuth用户没有密码
+			Role:     models.RoleUser,
+			IsActive: true,
+		}
+		if err := models.DB.Create(&user).Error; err != nil {
+			c.JSON(500, gin.H{"error": "Failed to create user"})
+			return
+		}
+	}
+
+	// 生成JWT token
+	token, err := lib.GenerateToken(user.ID, user.Email, string(user.Role))
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
+	// 清除敏感信息
+	user.PasswordHash = ""
+
+	c.JSON(200, LoginResponse{
+		Token: token,
+		User:  user,
+	})
+}
+
+// WeChatCallback 微信回调
+// @Summary 微信OAuth回调
+// @Description 微信OAuth登录回调
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param code query string true "OAuth授权码"
+// @Param state query string true "状态参数"
+// @Router /auth/callback/wechat [get]
+func WeChatCallback(c *gin.Context) {
+	code := c.Query("code")
+	state := c.Query("state")
+
+	if code == "" {
+		c.JSON(400, gin.H{"error": "Missing authorization code"})
+		return
+	}
+
+	// 使用微信OAuth服务处理回调
+	userInfo, err := svcauth.HandleWeChatCallback(code, state)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"error": "Failed to handle WeChat callback",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// 查找或创建用户
+	var user models.User
+	err = models.DB.Where("email = ?", userInfo.Email).First(&user).Error
+	if err != nil {
+		// 创建新用户
+		user = models.User{
+			ID:       uuid.New(),
+			Email:    userInfo.Email,
+			PasswordHash: "", // OAuth用户没有密码
+			Role:     models.RoleUser,
+			IsActive: true,
+		}
+		if err := models.DB.Create(&user).Error; err != nil {
+			c.JSON(500, gin.H{"error": "Failed to create user"})
+			return
+		}
+	}
+
+	// 生成JWT token
+	token, err := lib.GenerateToken(user.ID, user.Email, string(user.Role))
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
+	// 清除敏感信息
+	user.PasswordHash = ""
+
+	c.JSON(200, LoginResponse{
+		Token: token,
+		User:  user,
+	})
+}
+
+// FeishuCallback 飞书回调
+// @Summary 飞书OAuth回调
+// @Description 飞书OAuth登录回调
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param code query string true "OAuth授权码"
+// @Param state query string true "状态参数"
+// @Router /auth/callback/feishu [get]
+func FeishuCallback(c *gin.Context) {
+	code := c.Query("code")
+	state := c.Query("state")
+
+	if code == "" {
+		c.JSON(400, gin.H{"error": "Missing authorization code"})
+		return
+	}
+
+	// 使用飞书OAuth服务处理回调
+	userInfo, err := svcauth.HandleFeishuCallback(code, state)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"error": "Failed to handle Feishu callback",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// 查找或创建用户
+	var user models.User
+	err = models.DB.Where("email = ?", userInfo.Email).First(&user).Error
+	if err != nil {
+		// 创建新用户
+		user = models.User{
+			ID:       uuid.New(),
+			Email:    userInfo.Email,
+			PasswordHash: "", // OAuth用户没有密码
+			Role:     models.RoleUser,
+			IsActive: true,
+		}
+		if err := models.DB.Create(&user).Error; err != nil {
+			c.JSON(500, gin.H{"error": "Failed to create user"})
+			return
+		}
+	}
+
+	// 生成JWT token
+	token, err := lib.GenerateToken(user.ID, user.Email, string(user.Role))
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
+	// 清除敏感信息
+	user.PasswordHash = ""
+
+	c.JSON(200, LoginResponse{
+		Token: token,
+		User:  user,
+	})
+}
+
+// XiaohongshuCallback 小红书回调
+// @Summary 小红书OAuth回调
+// @Description 小红书OAuth登录回调
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param code query string true "OAuth授权码"
+// @Param state query string true "状态参数"
+// @Router /auth/callback/xiaohongshu [get]
+func XiaohongshuCallback(c *gin.Context) {
+	code := c.Query("code")
+	state := c.Query("state")
+
+	if code == "" {
+		c.JSON(400, gin.H{"error": "Missing authorization code"})
+		return
+	}
+
+	// 使用小红书OAuth服务处理回调
+	userInfo, err := svcauth.HandleXiaohongshuCallback(code, state)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"error": "Failed to handle Xiaohongshu callback",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	// 查找或创建用户
+	var user models.User
+	err = models.DB.Where("email = ?", userInfo.Email).First(&user).Error
+	if err != nil {
+		// 创建新用户
+		user = models.User{
+			ID:       uuid.New(),
+			Email:    userInfo.Email,
+			PasswordHash: "", // OAuth用户没有密码
+			Role:     models.RoleUser,
+			IsActive: true,
+		}
+		if err := models.DB.Create(&user).Error; err != nil {
+			c.JSON(500, gin.H{"error": "Failed to create user"})
+			return
+		}
+	}
+
+	// 生成JWT token
+	token, err := lib.GenerateToken(user.ID, user.Email, string(user.Role))
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to generate token"})
+		return
+	}
+
+	// 清除敏感信息
+	user.PasswordHash = ""
+
+	c.JSON(200, LoginResponse{
+		Token: token,
+		User:  user,
+	})
 }
