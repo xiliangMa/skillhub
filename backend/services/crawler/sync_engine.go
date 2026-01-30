@@ -1,9 +1,11 @@
 package crawler
 
 import (
+	"fmt"
 	"log"
 	"skillhub/config"
 	"skillhub/models"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -81,17 +83,32 @@ func (e *SyncEngine) runFullSync() error {
 	log.Println("Starting full sync")
 	startTime := time.Now()
 
+	var totalNew, totalUpdated int
+	var syncErrors []string
+
 	// 同步所有配置的主题
 	for _, topic := range e.config.Topics {
-		if err := e.syncTopic(topic, true); err != nil {
+		log.Printf("Processing topic: %s", topic)
+		newCount, updatedCount, err := e.syncTopic(topic, true)
+		if err != nil {
+			errorMsg := fmt.Sprintf("topic %s: %v", topic, err)
+			syncErrors = append(syncErrors, errorMsg)
 			log.Printf("Failed to sync topic %s: %v", topic, err)
 			// 继续其他主题
 		}
+		totalNew += newCount
+		totalUpdated += updatedCount
 	}
 
 	// 记录同步日志
 	duration := time.Since(startTime)
-	return e.recordSyncLog("github_sync", "full", duration, nil)
+	var finalErr error
+	if len(syncErrors) > 0 {
+		finalErr = fmt.Errorf("sync completed with errors: %s", strings.Join(syncErrors, "; "))
+	}
+
+	log.Printf("Full sync completed: %d new, %d updated, %d errors", totalNew, totalUpdated, len(syncErrors))
+	return e.recordSyncLogWithStats("github_sync", "full", duration, totalNew, totalUpdated, finalErr)
 }
 
 // runIncrementalSync 增量同步
@@ -99,25 +116,40 @@ func (e *SyncEngine) runIncrementalSync() error {
 	log.Printf("Starting incremental sync (last sync: %v)", e.lastSync)
 	startTime := time.Now()
 
+	var totalNew, totalUpdated int
+	var syncErrors []string
+
 	// 同步所有配置的主题
 	for _, topic := range e.config.Topics {
-		if err := e.syncTopic(topic, false); err != nil {
+		log.Printf("Processing topic: %s", topic)
+		newCount, updatedCount, err := e.syncTopic(topic, false)
+		if err != nil {
+			errorMsg := fmt.Sprintf("topic %s: %v", topic, err)
+			syncErrors = append(syncErrors, errorMsg)
 			log.Printf("Failed to sync topic %s: %v", topic, err)
 			// 继续其他主题
 		}
+		totalNew += newCount
+		totalUpdated += updatedCount
 	}
 
 	// 记录同步日志
 	duration := time.Since(startTime)
-	return e.recordSyncLog("github_sync", "incremental", duration, nil)
+	var finalErr error
+	if len(syncErrors) > 0 {
+		finalErr = fmt.Errorf("sync completed with errors: %s", strings.Join(syncErrors, "; "))
+	}
+
+	log.Printf("Incremental sync completed: %d new, %d updated, %d errors", totalNew, totalUpdated, len(syncErrors))
+	return e.recordSyncLogWithStats("github_sync", "incremental", duration, totalNew, totalUpdated, finalErr)
 }
 
 // syncTopic 同步特定主题
-func (e *SyncEngine) syncTopic(topic string, fullSync bool) error {
+func (e *SyncEngine) syncTopic(topic string, fullSync bool) (newCount int, updatedCount int, err error) {
 	log.Printf("Syncing topic: %s (full: %v)", topic, fullSync)
 
-	totalRepos := 0
 	page := 1
+	var syncErrors []string
 
 	for page <= e.config.MaxPages {
 		log.Printf("Fetching page %d for topic %s", page, topic)
@@ -125,7 +157,7 @@ func (e *SyncEngine) syncTopic(topic string, fullSync bool) error {
 		// 搜索仓库
 		repos, resp, err := e.client.SearchRepositoriesByTopic(topic, page)
 		if err != nil {
-			return err
+			return newCount, updatedCount, fmt.Errorf("failed to search repositories: %w", err)
 		}
 
 		// 处理本页结果
@@ -135,17 +167,24 @@ func (e *SyncEngine) syncTopic(topic string, fullSync bool) error {
 				continue // 跳过未更新的仓库
 			}
 
-			// 转换为技能模型
-			skill := e.client.ConvertToSkillModel(repo, topic)
+			// 转换为技能模型（使用SKILL.md元数据）
+			skill := e.client.ConvertToSkillModelWithMetadata(repo, topic)
 			if skill == nil {
 				continue
 			}
 
 			// 保存到数据库
-			if err := e.saveOrUpdateSkill(skill); err != nil {
-				log.Printf("Failed to save skill %s: %v", skill.Name, err)
+			isNew, saveErr := e.saveOrUpdateSkill(skill)
+			if saveErr != nil {
+				errorMsg := fmt.Sprintf("skill %s: %v", skill.Name, saveErr)
+				syncErrors = append(syncErrors, errorMsg)
+				log.Printf("Failed to save skill %s: %v", skill.Name, saveErr)
 			} else {
-				totalRepos++
+				if isNew {
+					newCount++
+				} else {
+					updatedCount++
+				}
 			}
 		}
 
@@ -163,12 +202,17 @@ func (e *SyncEngine) syncTopic(topic string, fullSync bool) error {
 		page++
 	}
 
-	log.Printf("Topic %s sync completed: %d repos processed", topic, totalRepos)
-	return nil
+	log.Printf("Topic %s sync completed: %d new, %d updated, %d errors", topic, newCount, updatedCount, len(syncErrors))
+
+	if len(syncErrors) > 0 {
+		err = fmt.Errorf("topic sync completed with errors: %s", strings.Join(syncErrors, "; "))
+	}
+
+	return newCount, updatedCount, err
 }
 
 // saveOrUpdateSkill 保存或更新技能到数据库
-func (e *SyncEngine) saveOrUpdateSkill(skill *models.Skill) error {
+func (e *SyncEngine) saveOrUpdateSkill(skill *models.Skill) (isNew bool, err error) {
 	var existingSkill models.Skill
 	result := e.db.Where("github_url = ?", skill.GitHubURL).First(&existingSkill)
 
@@ -182,11 +226,13 @@ func (e *SyncEngine) saveOrUpdateSkill(skill *models.Skill) error {
 		existingSkill.SyncSource = skill.SyncSource
 		// 保留现有的CategoryID和Tags
 
-		return e.db.Save(&existingSkill).Error
+		err = e.db.Save(&existingSkill).Error
+		return false, err // 不是新技能
 	}
 
 	// 创建新技能
-	return e.db.Create(skill).Error
+	err = e.db.Create(skill).Error
+	return true, err // 是新技能
 }
 
 // loadLastSyncTime 加载上次同步时间
@@ -215,6 +261,11 @@ func (e *SyncEngine) needFullRefresh() bool {
 
 // recordSyncLog 记录同步日志
 func (e *SyncEngine) recordSyncLog(taskType, strategy string, duration time.Duration, err error) error {
+	return e.recordSyncLogWithStats(taskType, strategy, duration, 0, 0, err)
+}
+
+// recordSyncLogWithStats 记录带统计信息的同步日志
+func (e *SyncEngine) recordSyncLogWithStats(taskType, strategy string, duration time.Duration, newCount, updatedCount int, err error) error {
 	status := "success"
 	errorMsg := ""
 	if err != nil {
@@ -229,9 +280,12 @@ func (e *SyncEngine) recordSyncLog(taskType, strategy string, duration time.Dura
 		EndTime:            &[]time.Time{time.Now()}[0],
 		Status:             status,
 		ErrorMessage:       errorMsg,
-		NewSkillsCount:     0,    // 可以后续统计
-		UpdatedSkillsCount: 0,    // 可以后续统计
+		NewSkillsCount:     newCount,
+		UpdatedSkillsCount: updatedCount,
 	}
+
+	log.Printf("Sync log recorded: %s, %s, %d new, %d updated, status: %s",
+		taskType, strategy, newCount, updatedCount, status)
 
 	return e.db.Create(syncLog).Error
 }

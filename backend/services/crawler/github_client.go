@@ -78,14 +78,15 @@ func (c *GitHubClient) ConvertToSkillModel(repo *github.Repository, topic string
 	// 设置分类ID（暂时为nil，后续可以添加分类映射逻辑）
 	var categoryID *uuid.UUID = nil
 
-	// 确定分类
-	category := "其他"
+	// 确定分类（这里计算了分类但未使用，因为CategoryID暂时为nil）
+	// 后续可以添加分类映射逻辑
+	_ = "其他" // 占位符，避免未使用变量错误
 	if repo.Language != nil {
 		switch *repo.Language {
 		case "Go", "Python", "JavaScript", "TypeScript", "Java", "C++":
-			category = "开发工具"
+			_ = "开发工具"
 		case "Markdown", "HTML", "CSS":
-			category = "文档"
+			_ = "文档"
 		}
 	}
 
@@ -115,4 +116,87 @@ func (c *GitHubClient) ConvertToSkillModel(repo *github.Repository, topic string
 func (c *GitHubClient) GetRateLimit() (*github.RateLimits, error) {
 	rate, _, err := c.client.RateLimit.Get(c.ctx)
 	return rate, err
+}
+
+// GetSkillMetadata 获取仓库的SKILL.md文件并解析元数据
+func (c *GitHubClient) GetSkillMetadata(owner, repo string) (*SkillMetadata, error) {
+	// 尝试获取SKILL.md文件
+	fileContent, _, _, err := c.client.Repositories.GetContents(c.ctx, owner, repo, "SKILL.md", nil)
+	if err != nil {
+		// 文件不存在，返回nil
+		return nil, nil
+	}
+
+	// 解码文件内容
+	content, err := fileContent.GetContent()
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode file content: %w", err)
+	}
+
+	// 解析元数据
+	return parseSkillMetadata(content)
+}
+
+// ConvertToSkillModelWithMetadata 使用SKILL.md元数据转换为技能模型
+func (c *GitHubClient) ConvertToSkillModelWithMetadata(repo *github.Repository, topic string) *models.Skill {
+	if repo == nil {
+		return nil
+	}
+
+	// 获取SKILL.md元数据
+	var skillMetadata *SkillMetadata
+	if repo.Owner != nil && repo.Name != nil {
+		metadata, err := c.GetSkillMetadata(repo.Owner.GetLogin(), repo.GetName())
+		if err == nil && metadata != nil {
+			skillMetadata = metadata
+		}
+	}
+
+	// 设置分类ID（暂时为nil，后续可以添加分类映射逻辑）
+	var categoryID *uuid.UUID = nil
+
+	// 确定分类（这里计算了分类但未使用，因为CategoryID暂时为nil）
+	// 后续可以添加分类映射逻辑
+	_ = "其他" // 占位符，避免未使用变量错误
+	if skillMetadata != nil && skillMetadata.Category != "" {
+		_ = skillMetadata.Category
+	} else if repo.Language != nil {
+		switch *repo.Language {
+		case "Go", "Python", "JavaScript", "TypeScript", "Java", "C++":
+			_ = "开发工具"
+		case "Markdown", "HTML", "CSS":
+			_ = "文档"
+		}
+	}
+
+	// 创建技能
+	now := time.Now()
+	skill := &models.Skill{
+		Name:        repo.GetName(),
+		Description: repo.GetDescription(),
+		GitHubURL:   repo.GetHTMLURL(),
+		StarsCount:  repo.GetStargazersCount(),
+		ForksCount:  repo.GetForksCount(),
+		PriceType:   models.PriceTypeFree, // 默认免费
+		Price:       0,
+		IsActive:    true,
+		LastSyncAt:  &now,
+		SyncSource:  "github",
+		CategoryID:  categoryID,
+	}
+
+	// 如果从SKILL.md获取到元数据，更新技能信息
+	if skillMetadata != nil {
+		if skillMetadata.Name != "" {
+			skill.Name = skillMetadata.Name
+		}
+		if skillMetadata.Description != "" {
+			skill.Description = skillMetadata.Description
+		}
+		skill.PriceType = skillMetadata.PriceType
+		skill.Price = skillMetadata.Price
+		// 注意：Tags字段需要通过many2many关系单独处理
+	}
+
+	return skill
 }

@@ -12,12 +12,12 @@
 - [x] 前端购买流程完善 (frontend/app/skills/[id]/page.tsx:53) - 购买流程已实现，支持跳转到支付页面
 
 ### 优先级2: GitHub爬虫服务
-- [ ] 创建爬虫服务目录 (backend/services/crawler/)
-- [ ] 实现GitHub API集成
-- [ ] 实现SKILL.md格式解析器
-- [ ] 实现增量同步逻辑
-- [ ] 集成到定时任务 (backend/services/scheduler/scheduler.go:47-49)
-- [ ] 添加错误处理和监控
+- [x] 创建爬虫服务目录 (backend/services/crawler/) - 已完成
+- [x] 实现GitHub API集成 - 已完成，支持Token认证和仓库搜索
+- [x] 实现SKILL.md格式解析器 - 已完成，支持YAML frontmatter解析
+- [x] 实现增量同步逻辑 - 已完成智能同步策略（全量/增量/智能）
+- [x] 集成到定时任务 (backend/services/scheduler/scheduler.go:47-49) - 已完成，支持数据库配置的定时任务
+- [x] 添加错误处理和监控 - 已完成，包括错误处理、日志记录和统计信息
 
 ### 优先级3: 购买验证安全
 - [ ] 验证购买记录中间件 (backend/api/skills/skills.go:237)
