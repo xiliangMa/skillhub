@@ -1,8 +1,10 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -68,6 +70,7 @@ type AlipayConfig struct {
 	PrivateKey string
 	PublicKey  string
 	NotifyURL  string
+	ReturnURL  string
 }
 
 type WeChatPayConfig struct {
@@ -76,6 +79,7 @@ type WeChatPayConfig struct {
 	SerialNo  string
 	CertPath  string
 	NotifyURL string
+	ReturnURL string
 }
 
 type StripeConfig struct {
@@ -91,7 +95,12 @@ type PayPalConfig struct {
 }
 
 type GitHubConfig struct {
-	Token string
+	Token         string
+	Topics        []string
+	SyncStrategy  string
+	SyncInterval  int
+	PerPage       int
+	MaxPages      int
 }
 
 var AppConfig *Config
@@ -155,6 +164,7 @@ func LoadConfig() *Config {
 				PrivateKey: getEnv("ALIPAY_PRIVATE_KEY", ""),
 				PublicKey:  getEnv("ALIPAY_PUBLIC_KEY", ""),
 				NotifyURL:  getEnv("ALIPAY_NOTIFY_URL", ""),
+				ReturnURL:  getEnv("ALIPAY_RETURN_URL", "http://localhost:3000/orders"),
 			},
 			WeChatPay: WeChatPayConfig{
 				MchID:     getEnv("WECHAT_PAY_MCH_ID", ""),
@@ -162,6 +172,7 @@ func LoadConfig() *Config {
 				SerialNo:  getEnv("WECHAT_PAY_SERIAL_NO", ""),
 				CertPath:  getEnv("WECHAT_PAY_CERT_PATH", ""),
 				NotifyURL: getEnv("WECHAT_PAY_NOTIFY_URL", ""),
+				ReturnURL: getEnv("WECHAT_PAY_RETURN_URL", "http://localhost:3000/orders"),
 			},
 			Stripe: StripeConfig{
 				SecretKey:      getEnv("STRIPE_SECRET_KEY", ""),
@@ -175,7 +186,12 @@ func LoadConfig() *Config {
 			},
 		},
 		GitHub: GitHubConfig{
-			Token: getEnv("GITHUB_TOKEN", ""),
+			Token:         getEnv("GITHUB_TOKEN", ""),
+			Topics:        parseStringSlice(getEnv("GITHUB_TOPICS", "ai,automation,developer-tools,machine-learning"), ","),
+			SyncStrategy:  getEnv("GITHUB_SYNC_STRATEGY", "smart"),
+			SyncInterval:  getEnvInt("GITHUB_SYNC_INTERVAL", 3600),
+			PerPage:       getEnvInt("GITHUB_PER_PAGE", 30),
+			MaxPages:      getEnvInt("GITHUB_MAX_PAGES", 10),
 		},
 	}
 }
@@ -185,6 +201,34 @@ func getEnv(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+func getEnvInt(key string, defaultValue int) int {
+	valueStr := getEnv(key, "")
+	if valueStr == "" {
+		return defaultValue
+	}
+	var value int
+	_, err := fmt.Sscanf(valueStr, "%d", &value)
+	if err != nil {
+		return defaultValue
+	}
+	return value
+}
+
+func parseStringSlice(s, sep string) []string {
+	if s == "" {
+		return []string{}
+	}
+	parts := strings.Split(s, sep)
+	result := make([]string, 0, len(parts))
+	for _, part := range parts {
+		trimmed := strings.TrimSpace(part)
+		if trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
 }
 
 func parseDuration(s string) time.Duration {

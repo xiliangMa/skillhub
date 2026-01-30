@@ -2,9 +2,8 @@ package scheduler
 
 import (
 	"log"
-	"skillhub/config"
 	"skillhub/models"
-	// "skillhub/services/crawler"
+	"skillhub/services/crawler"
 
 	"github.com/robfig/cron/v3"
 )
@@ -34,10 +33,10 @@ func loadScheduledTasks() {
 	db := models.GetDB()
 
 	var tasks []models.ScheduledTask
-	db.Where("is_enabled = ?", true).Find(&tasks)
+	db.Where("is_active = ?", true).Find(&tasks)
 
 	for _, task := range tasks {
-		AddTask(task.TaskID, task.CronExpression)
+		AddTask(task.TaskName, task.CronExpression)
 	}
 }
 
@@ -45,9 +44,9 @@ func loadScheduledTasks() {
 func AddTask(taskID, cronExpression string) error {
 	_, err := GlobalScheduler.cron.AddFunc(cronExpression, func() {
 		log.Printf("Executing scheduled task: %s", taskID)
-		// if err := crawler.RunScheduledTask(taskID); err != nil {
-		// 	log.Printf("Error executing task %s: %v", taskID, err)
-		// }
+		if err := crawler.RunScheduledTask(taskID); err != nil {
+			log.Printf("Error executing task %s: %v", taskID, err)
+		}
 	})
 
 	if err != nil {
@@ -79,17 +78,16 @@ func InitDefaultTasks() {
 	// 默认每日凌晨3点同步
 	tasks := []models.ScheduledTask{
 		{
-			TaskID:         "daily_sync",
-			Name:           "每日数据同步",
+			TaskName:       "daily_sync",
 			CronExpression: "0 3 * * *", // 每天3点
-			IsEnabled:      config.AppConfig.Crawler.EnableAutoSync,
+			IsActive:       true,
 			Description:    "自动从GitHub同步Skills数据",
 		},
 	}
 
 	for _, task := range tasks {
 		var existingTask models.ScheduledTask
-		if err := db.Where("task_id = ?", task.TaskID).First(&existingTask).Error; err != nil {
+		if err := db.Where("task_name = ?", task.TaskName).First(&existingTask).Error; err != nil {
 			db.Create(&task)
 		}
 	}

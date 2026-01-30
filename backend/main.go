@@ -116,6 +116,9 @@ func main() {
 			paymentGroup.GET("/orders", payment.GetOrders)
 			paymentGroup.POST("/payment/orders/:id/pay", payment.GetPaymentURL)
 			paymentGroup.POST("/callback/alipay", payment.AlipayCallback)
+			paymentGroup.POST("/callback/stripe", payment.StripeCallback)
+			paymentGroup.POST("/callback/paypal", payment.PayPalCallback)
+			paymentGroup.POST("/callback/mock", payment.MockCallback)
 		}
 
 		adminGroup := v1.Group("/admin")

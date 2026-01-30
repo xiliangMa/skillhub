@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { skillsApi, type Skill } from "@/lib/api"
+import { skillsApi, paymentApi, type Skill } from "@/lib/api"
 import { Star, GitFork, Download, ArrowLeft, ShoppingCart, ExternalLink, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import { useI18n } from "@/contexts/i18n-context"
@@ -50,8 +50,22 @@ export default function SkillDetailPage() {
         return
       }
 
-      // TODO: Implement purchase flow
-      alert('购买功能开发中')
+      // 1. 创建订单
+      const orderResponse = await paymentApi.createOrder(skill.id)
+      if (orderResponse.code !== 0) {
+        throw new Error(orderResponse.message || 'Failed to create order')
+      }
+
+      const orderId = orderResponse.data.id
+
+      // 2. 获取支付链接
+      const paymentResponse = await paymentApi.getPaymentUrl(orderId)
+      if (paymentResponse.code !== 0) {
+        throw new Error(paymentResponse.message || 'Failed to get payment URL')
+      }
+
+      // 3. 跳转到支付页面
+      window.location.href = paymentResponse.data.payment_url
     } catch (error) {
       console.error('Failed to purchase skill:', error)
     } finally {

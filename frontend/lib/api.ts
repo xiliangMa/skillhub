@@ -65,6 +65,13 @@ export interface Skill {
   }[]
 }
 
+// API标准响应格式
+export interface ApiResponse<T = any> {
+  code: number
+  message: string
+  data: T
+}
+
 export interface Category {
   id: string
   name: string
@@ -174,6 +181,40 @@ export const authApi = {
 
   getMe: async () => {
     const response = await api.get<User>('/auth/me')
+    return response.data
+  },
+}
+
+// Payment API
+export const paymentApi = {
+  createOrder: async (skillId: string) => {
+    const response = await api.post<ApiResponse<Order>>('/payment/orders', { skill_id: skillId })
+    return response.data
+  },
+
+  getPaymentUrl: async (orderId: string) => {
+    const response = await api.post<ApiResponse<{ payment_url: string; order_id: string; order_no: string }>>(
+      `/payment/orders/${orderId}/pay`
+    )
+    return response.data
+  },
+
+  getOrders: async (params?: { page?: number; page_size?: number }) => {
+    const response = await api.get<ApiResponse<{ list: Order[]; total: number; page: number; page_size: number }>>(
+      '/payment/orders',
+      { params }
+    )
+    return response.data
+  },
+
+  mockCallback: async (orderNo: string, tradeStatus: string, paymentType?: string, tradeNo?: string, totalAmount?: string) => {
+    const response = await api.post('/payment/callback/mock', {
+      order_no: orderNo,
+      trade_status: tradeStatus,
+      payment_type: paymentType || 'mock',
+      trade_no: tradeNo || `mock_trade_${Date.now()}`,
+      total_amount: totalAmount || '0.00',
+    })
     return response.data
   },
 }

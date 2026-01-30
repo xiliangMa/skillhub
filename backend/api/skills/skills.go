@@ -211,6 +211,7 @@ func DownloadSkill(c *gin.Context) {
 	}
 
 	db := models.GetDB()
+	var userID string
 
 	// 获取技能信息
 	var skill models.Skill
@@ -224,9 +225,9 @@ func DownloadSkill(c *gin.Context) {
 
 	// 检查是否需要购买
 	if skill.PriceType == models.PriceTypePaid {
-		// 检查是否已购买
-		token := c.GetHeader("Authorization")
-		if token == "" {
+		// 验证购买记录
+		userID = c.GetString("user_id")
+		if userID == "" {
 			c.JSON(401, gin.H{
 				"code":    401,
 				"message": "Please login to download",
@@ -234,16 +235,22 @@ func DownloadSkill(c *gin.Context) {
 			return
 		}
 
-		// TODO: 验证购买记录
-		c.JSON(403, gin.H{
-			"code":    403,
-			"message": "Please purchase this skill first",
-		})
-		return
+		userUUID := uuid.MustParse(userID)
+		var existingOrder models.Order
+		if err := db.Joins("JOIN order_items ON order_items.order_id = orders.id").
+			Where("orders.user_id = ? AND orders.status = ? AND order_items.skill_id = ?",
+				userUUID, models.OrderStatusPaid, uid).
+			First(&existingOrder).Error; err != nil {
+			c.JSON(403, gin.H{
+				"code":    403,
+				"message": "Please purchase this skill first",
+			})
+			return
+		}
+		// 购买验证通过，允许下载
 	}
 
 	// 记录下载
-	userID := c.GetString("user_id")
 	if userID != "" {
 		downloadRecord := models.DownloadRecord{
 			SkillID:   uid,
@@ -330,7 +337,18 @@ func PurchaseSkill(c *gin.Context) {
 		return
 	}
 
-	// TODO: 检查是否已购买
+	// 检查是否已购买
+	var existingOrder models.Order
+	if err := db.Joins("JOIN order_items ON order_items.order_id = orders.id").
+		Where("orders.user_id = ? AND orders.status = ? AND order_items.skill_id = ?",
+			userUUID, models.OrderStatusPaid, uid).
+		First(&existingOrder).Error; err == nil {
+		c.JSON(400, gin.H{
+			"code":    400,
+			"message": "Skill already purchased",
+		})
+		return
+	}
 
 	// 创建订单
 	orderNo := "ORD" + time.Now().Format("20060102150405")

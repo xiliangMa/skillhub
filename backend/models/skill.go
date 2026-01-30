@@ -47,6 +47,7 @@ type Skill struct {
 	ForksCount     int              `gorm:"default:0" json:"forks_count"`
 	IsActive       bool             `gorm:"default:true;index" json:"is_active"`
 	LastSyncAt     *time.Time       `json:"last_sync_at,omitempty"`
+	SyncSource     string           `gorm:"type:varchar(100);default:'manual'" json:"sync_source"`
 	CreatedAt      time.Time        `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt      time.Time        `gorm:"autoUpdateTime" json:"updated_at"`
 
