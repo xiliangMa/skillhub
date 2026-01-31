@@ -183,6 +183,95 @@ export const authApi = {
     const response = await api.get<User>('/auth/me')
     return response.data
   },
+
+  updateProfile: async (profileData: {
+    name?: string
+    username?: string
+    bio?: string
+    avatar_url?: string
+    timezone?: string
+    location?: string
+    website?: string
+    github?: string
+    twitter?: string
+    linkedin?: string
+  }) => {
+    const response = await api.put<User>('/auth/profile', profileData)
+    return response.data
+  },
+
+  changePassword: async (currentPassword: string, newPassword: string) => {
+    const response = await api.put<{ message: string }>('/auth/password', {
+      current_password: currentPassword,
+      new_password: newPassword,
+    })
+    return response.data
+  },
+
+  getOAuthAccounts: async () => {
+    const response = await api.get<Array<{
+      provider: string
+      provider_user_id: string
+      created_at: string
+      updated_at: string
+    }>>('/auth/oauth-accounts')
+    return response.data
+  },
+
+  unbindOAuthAccount: async (provider: string) => {
+    const response = await api.delete<{ message: string }>(`/auth/oauth-accounts/${provider}`)
+    return response.data
+  },
+
+  getPreferences: async () => {
+    const response = await api.get<{
+      language: string
+      theme: string
+      notifications: {
+        email: boolean
+        in_app: boolean
+        marketing: boolean
+      }
+      privacy: {
+        profile_public: boolean
+        analytics_opt_in: boolean
+      }
+      display: {
+        view_mode: string
+        items_per_page: number
+      }
+      search: {
+        save_history: boolean
+        personalized: boolean
+      }
+    }>('/auth/preferences')
+    return response.data
+  },
+
+  updatePreferences: async (preferences: {
+    language?: string
+    theme?: string
+    notifications?: {
+      email?: boolean
+      in_app?: boolean
+      marketing?: boolean
+    }
+    privacy?: {
+      profile_public?: boolean
+      analytics_opt_in?: boolean
+    }
+    display?: {
+      view_mode?: string
+      items_per_page?: number
+    }
+    search?: {
+      save_history?: boolean
+      personalized?: boolean
+    }
+  }) => {
+    const response = await api.put<{ message: string; preferences: any }>('/auth/preferences', preferences)
+    return response.data
+  },
 }
 
 // Payment API

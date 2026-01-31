@@ -137,6 +137,56 @@ interface Translations {
     statusPaid: string
     statusPending: string
   }
+  dashboard: {
+    nav: {
+      dashboard: string
+      dashboardDesc: string
+      profile: string
+      profileDesc: string
+      orders: string
+      ordersDesc: string
+      security: string
+      securityDesc: string
+      preferences: string
+      preferencesDesc: string
+      mySkills: string
+      mySkillsDesc: string
+      analytics: string
+      analyticsDesc: string
+    }
+    welcome: string
+    subtitle: string
+    exploreSkills: string
+    tip: string
+    tipContent: string
+    stats: {
+      totalOrders: string
+      ordersDesc: string
+      totalSkills: string
+      skillsDesc: string
+      totalDownloads: string
+      downloadsDesc: string
+      learningProgress: string
+    }
+    recentActivity: {
+      title: string
+      description: string
+      viewAll: string
+    }
+    quickActions: {
+      title: string
+      description: string
+      browseSkills: string
+      browseSkillsDesc: string
+      purchaseHistory: string
+      purchaseHistoryDesc: string
+      learningProgress: string
+      learningProgressDesc: string
+      browse: string
+      view: string
+      viewProgress: string
+    }
+  }
 }
 
 const translations: Record<Locale, Translations> = {
@@ -286,6 +336,56 @@ const translations: Record<Locale, Translations> = {
       statusPaid: "Paid",
       statusPending: "Pending",
     },
+    dashboard: {
+      nav: {
+        dashboard: "Dashboard",
+        dashboardDesc: "Overview and quick access",
+        profile: "Profile",
+        profileDesc: "Manage personal information and avatar",
+        orders: "Purchase History",
+        ordersDesc: "View orders and download records",
+        security: "Account Security",
+        securityDesc: "Password and third-party account management",
+        preferences: "Preferences",
+        preferencesDesc: "Language, theme and notification settings",
+        mySkills: "My Skills",
+        mySkillsDesc: "Manage and upload skill packages",
+        analytics: "Analytics",
+        analyticsDesc: "Learning progress and usage statistics",
+      },
+      welcome: "Welcome back",
+      subtitle: "This is your personal dashboard, where you can manage your account, view progress, and access important features.",
+      exploreSkills: "Explore Skills",
+      tip: "Tip:",
+      tipContent: "Complete more learning tasks to unlock achievements!",
+      stats: {
+        totalOrders: "Total Orders",
+        ordersDesc: "Purchased skills",
+        totalSkills: "Skills Owned",
+        skillsDesc: "Available skill packages",
+        totalDownloads: "Total Downloads",
+        downloadsDesc: "Skill package downloads",
+        learningProgress: "Learning Progress",
+      },
+      recentActivity: {
+        title: "Recent Activity",
+        description: "Your recent operation records",
+        viewAll: "View All Activity",
+      },
+      quickActions: {
+        title: "Quick Actions",
+        description: "Common functions and shortcuts",
+        browseSkills: "Browse Skills",
+        browseSkillsDesc: "Explore new skills",
+        purchaseHistory: "Purchase History",
+        purchaseHistoryDesc: "View order records",
+        learningProgress: "Learning Progress",
+        learningProgressDesc: "View learning statistics",
+        browse: "Browse",
+        view: "View",
+        viewProgress: "View Progress",
+      },
+    },
   },
   zh: {
     nav: {
@@ -432,6 +532,56 @@ const translations: Record<Locale, Translations> = {
       noOrders: "暂无订单数据",
       statusPaid: "已支付",
       statusPending: "待支付",
+    },
+    dashboard: {
+      nav: {
+        dashboard: "仪表板",
+        dashboardDesc: "数据概览和快速访问",
+        profile: "个人信息",
+        profileDesc: "管理个人资料和头像",
+        orders: "购买历史",
+        ordersDesc: "查看订单和下载记录",
+        security: "账户安全",
+        securityDesc: "密码和第三方账号管理",
+        preferences: "偏好设置",
+        preferencesDesc: "语言、主题和通知设置",
+        mySkills: "我的技能",
+        mySkillsDesc: "管理和上传技能包",
+        analytics: "数据分析",
+        analyticsDesc: "学习进度和使用统计",
+      },
+      welcome: "欢迎回来",
+      subtitle: "这是您的个人仪表板，可以管理账户、查看进度和访问重要功能。",
+      exploreSkills: "探索技能",
+      tip: "提示：",
+      tipContent: "完成更多学习任务可以解锁成就！",
+      stats: {
+        totalOrders: "总订单数",
+        ordersDesc: "已购买技能",
+        totalSkills: "已拥有技能",
+        skillsDesc: "可用的技能包",
+        totalDownloads: "总下载量",
+        downloadsDesc: "技能包下载次数",
+        learningProgress: "学习进度",
+      },
+      recentActivity: {
+        title: "最近活动",
+        description: "您的最近操作记录",
+        viewAll: "查看全部活动",
+      },
+      quickActions: {
+        title: "快速操作",
+        description: "常用功能和快捷入口",
+        browseSkills: "浏览技能",
+        browseSkillsDesc: "探索新技能",
+        purchaseHistory: "购买历史",
+        purchaseHistoryDesc: "查看订单记录",
+        learningProgress: "学习进度",
+        learningProgressDesc: "查看学习统计",
+        browse: "浏览",
+        view: "查看",
+        viewProgress: "查看进度",
+      },
     },
   },
 }

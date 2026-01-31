@@ -1,11 +1,13 @@
 package auth
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"skillhub/lib"
 	"skillhub/models"
 	svcauth "skillhub/services/auth"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -403,15 +405,27 @@ func WeChatCallback(c *gin.Context) {
 	if err != nil {
 		// 创建新用户
 		user = models.User{
-			ID:       uuid.New(),
-			Email:    userInfo.Email,
+			ID:           uuid.New(),
+			Email:        userInfo.Email,
+			Username:     userInfo.Username,
+			Name:         userInfo.Name,
 			PasswordHash: "", // OAuth用户没有密码
-			Role:     models.RoleUser,
-			IsActive: true,
+			Role:         models.RoleUser,
+			IsActive:     true,
 		}
 		if err := models.DB.Create(&user).Error; err != nil {
 			c.JSON(500, gin.H{"error": "Failed to create user"})
 			return
+		}
+	} else {
+		// 如果用户已存在但没有名称，更新名称
+		if user.Name == "" && userInfo.Name != "" {
+			user.Name = userInfo.Name
+			models.DB.Save(&user)
+		}
+		if user.Username == "" && userInfo.Username != "" {
+			user.Username = userInfo.Username
+			models.DB.Save(&user)
 		}
 	}
 
@@ -465,15 +479,27 @@ func FeishuCallback(c *gin.Context) {
 	if err != nil {
 		// 创建新用户
 		user = models.User{
-			ID:       uuid.New(),
-			Email:    userInfo.Email,
+			ID:           uuid.New(),
+			Email:        userInfo.Email,
+			Username:     userInfo.Username,
+			Name:         userInfo.Name,
 			PasswordHash: "", // OAuth用户没有密码
-			Role:     models.RoleUser,
-			IsActive: true,
+			Role:         models.RoleUser,
+			IsActive:     true,
 		}
 		if err := models.DB.Create(&user).Error; err != nil {
 			c.JSON(500, gin.H{"error": "Failed to create user"})
 			return
+		}
+	} else {
+		// 如果用户已存在但没有名称，更新名称
+		if user.Name == "" && userInfo.Name != "" {
+			user.Name = userInfo.Name
+			models.DB.Save(&user)
+		}
+		if user.Username == "" && userInfo.Username != "" {
+			user.Username = userInfo.Username
+			models.DB.Save(&user)
 		}
 	}
 
@@ -527,15 +553,27 @@ func XiaohongshuCallback(c *gin.Context) {
 	if err != nil {
 		// 创建新用户
 		user = models.User{
-			ID:       uuid.New(),
-			Email:    userInfo.Email,
+			ID:           uuid.New(),
+			Email:        userInfo.Email,
+			Username:     userInfo.Username,
+			Name:         userInfo.Name,
 			PasswordHash: "", // OAuth用户没有密码
-			Role:     models.RoleUser,
-			IsActive: true,
+			Role:         models.RoleUser,
+			IsActive:     true,
 		}
 		if err := models.DB.Create(&user).Error; err != nil {
 			c.JSON(500, gin.H{"error": "Failed to create user"})
 			return
+		}
+	} else {
+		// 如果用户已存在但没有名称，更新名称
+		if user.Name == "" && userInfo.Name != "" {
+			user.Name = userInfo.Name
+			models.DB.Save(&user)
+		}
+		if user.Username == "" && userInfo.Username != "" {
+			user.Username = userInfo.Username
+			models.DB.Save(&user)
 		}
 	}
 
@@ -553,4 +591,455 @@ func XiaohongshuCallback(c *gin.Context) {
 		Token: token,
 		User:  user,
 	})
+}
+
+// UpdateProfileRequest 更新用户信息请求
+type UpdateProfileRequest struct {
+	Name      string `json:"name"`
+	Username  string `json:"username"`
+	Bio       string `json:"bio"`
+	AvatarURL string `json:"avatar_url"`
+	Timezone  string `json:"timezone"`
+	Location  string `json:"location"`
+	Website   string `json:"website"`
+	GitHub    string `json:"github"`
+	Twitter   string `json:"twitter"`
+	LinkedIn  string `json:"linkedin"`
+}
+
+// UpdateProfile 更新用户个人信息
+// @Summary 更新用户个人信息
+// @Description 更新当前登录用户的个人信息
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param request body UpdateProfileRequest true "用户信息"
+// @Success 200 {object} models.User
+// @Router /auth/profile [put]
+func UpdateProfile(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	var req UpdateProfileRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	db := models.GetDB()
+
+	// 更新用户基本信息
+	var user models.User
+	if err := db.First(&user, "id = ?", userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// 更新字段
+	updates := make(map[string]interface{})
+	if req.Name != "" {
+		updates["name"] = req.Name
+	}
+	if req.Username != "" {
+		// 检查用户名是否已被其他用户使用
+		var existingUser models.User
+		if err := db.Where("username = ? AND id != ?", req.Username, userID).First(&existingUser).Error; err == nil {
+			c.JSON(http.StatusConflict, gin.H{"error": "Username already taken"})
+			return
+		}
+		updates["username"] = req.Username
+	}
+
+	if len(updates) > 0 {
+		if err := db.Model(&user).Updates(updates).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+			return
+		}
+	}
+
+	// 更新或创建用户档案
+	var profile models.UserProfile
+	if err := db.Where("user_id = ?", userID).First(&profile).Error; err != nil {
+		// 创建新档案
+		profile = models.UserProfile{
+			ID:     uuid.New(),
+			UserID: userID.(uuid.UUID),
+		}
+	}
+
+	// 更新档案字段
+	profileUpdates := make(map[string]interface{})
+	if req.Bio != "" {
+		profileUpdates["bio"] = req.Bio
+	}
+	if req.AvatarURL != "" {
+		profileUpdates["avatar_url"] = req.AvatarURL
+	}
+	if req.Timezone != "" || req.Location != "" || req.Website != "" || req.GitHub != "" || req.Twitter != "" || req.LinkedIn != "" {
+		// 更新偏好设置（JSON格式）
+		preferences := make(map[string]interface{})
+		if req.Timezone != "" {
+			preferences["timezone"] = req.Timezone
+		}
+		if req.Location != "" {
+			preferences["location"] = req.Location
+		}
+		if req.Website != "" {
+			preferences["website"] = req.Website
+		}
+		if req.GitHub != "" {
+			preferences["github"] = req.GitHub
+		}
+		if req.Twitter != "" {
+			preferences["twitter"] = req.Twitter
+		}
+		if req.LinkedIn != "" {
+			preferences["linkedin"] = req.LinkedIn
+		}
+		profileUpdates["preferences"] = preferences
+	}
+
+	if len(profileUpdates) > 0 {
+		if err := db.Model(&profile).Updates(profileUpdates).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update profile"})
+			return
+		}
+	}
+
+	// 重新加载用户数据
+	db.Preload("Profile").First(&user, "id = ?", userID)
+	user.PasswordHash = ""
+
+	c.JSON(http.StatusOK, user)
+}
+
+
+
+
+
+
+// OAuthAccount 第三方账号信息
+type OAuthAccount struct {
+	Provider       string    `json:"provider"`
+	ProviderUserID string    `json:"provider_user_id"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+}
+
+// GetOAuthAccounts 获取用户绑定的第三方账号
+// @Summary 获取第三方账号
+// @Description 获取当前用户绑定的第三方账号列表
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {array} OAuthAccount
+// @Router /auth/oauth-accounts [get]
+func GetOAuthAccounts(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	db := models.GetDB()
+
+	var oauthProviders []models.OAuthProvider
+	if err := db.Where("user_id = ?", userID).Find(&oauthProviders).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch OAuth accounts"})
+		return
+	}
+
+	accounts := make([]OAuthAccount, len(oauthProviders))
+	for i, provider := range oauthProviders {
+		accounts[i] = OAuthAccount{
+			Provider:       provider.Provider,
+			ProviderUserID: provider.ProviderUserID,
+			CreatedAt:      provider.CreatedAt,
+			UpdatedAt:      provider.UpdatedAt,
+		}
+	}
+
+	c.JSON(http.StatusOK, accounts)
+}
+
+// UnbindOAuthAccount 解绑第三方账号
+// @Summary 解绑第三方账号
+// @Description 解绑用户绑定的第三方账号
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param provider path string true "第三方提供商: github, google, wechat, feishu, xiaohongshu"
+// @Success 200 {object} map[string]interface{}
+// @Router /auth/oauth-accounts/{provider} [delete]
+func UnbindOAuthAccount(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	provider := c.Param("provider")
+	
+	// 验证提供商
+	validProviders := map[string]bool{
+		"github":       true,
+		"google":       true,
+		"wechat":       true,
+		"feishu":       true,
+		"xiaohongshu":  true,
+	}
+
+	if !validProviders[provider] {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Unsupported OAuth provider",
+			"message": fmt.Sprintf("Provider '%s' is not supported", provider),
+		})
+		return
+	}
+
+	db := models.GetDB()
+
+	// 检查用户是否有密码，如果没有密码且这是唯一的登录方式，则不允许解绑
+	var user models.User
+	if err := db.First(&user, "id = ?", userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// 统计用户的OAuth账号数量
+	var oauthCount int64
+	db.Model(&models.OAuthProvider{}).Where("user_id = ?", userID).Count(&oauthCount)
+
+	// 如果用户没有密码且只有一个OAuth账号，则不允许解绑
+	if user.PasswordHash == "" && oauthCount <= 1 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Cannot unbind last OAuth account",
+			"message": "You must set a password before unbinding your last OAuth account",
+		})
+		return
+	}
+
+	// 删除OAuth账号
+	result := db.Where("user_id = ? AND provider = ?", userID, provider).Delete(&models.OAuthProvider{})
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unbind OAuth account"})
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "OAuth account not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": fmt.Sprintf("%s account unbound successfully", provider),
+	})
+}
+
+// UpdatePreferencesRequest 更新偏好设置请求
+type UpdatePreferencesRequest struct {
+	Language    string `json:"language"`
+	Theme       string `json:"theme"`
+	Notifications struct {
+		Email     bool `json:"email"`
+		InApp     bool `json:"in_app"`
+		Marketing bool `json:"marketing"`
+	} `json:"notifications"`
+	Privacy struct {
+		ProfilePublic bool `json:"profile_public"`
+		AnalyticsOptIn bool `json:"analytics_opt_in"`
+	} `json:"privacy"`
+	Display struct {
+		ViewMode     string `json:"view_mode"` // list, grid
+		ItemsPerPage int    `json:"items_per_page"`
+	} `json:"display"`
+	Search struct {
+		SaveHistory bool `json:"save_history"`
+		Personalized bool `json:"personalized"`
+	} `json:"search"`
+}
+
+// UpdatePreferences 更新用户偏好设置
+// @Summary 更新用户偏好设置
+// @Description 更新当前登录用户的偏好设置
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param request body UpdatePreferencesRequest true "偏好设置"
+// @Success 200 {object} map[string]interface{}
+// @Router /auth/preferences [put]
+func UpdatePreferences(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	var req UpdatePreferencesRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	db := models.GetDB()
+
+	// 查找或创建用户档案
+	var profile models.UserProfile
+	if err := db.Where("user_id = ?", userID).First(&profile).Error; err != nil {
+		// 创建新档案
+		profile = models.UserProfile{
+			ID:     uuid.New(),
+			UserID: userID.(uuid.UUID),
+		}
+	}
+
+	// 构建偏好设置JSON
+	preferences := map[string]interface{}{
+		"language": req.Language,
+		"theme":    req.Theme,
+		"notifications": map[string]bool{
+			"email":     req.Notifications.Email,
+			"in_app":    req.Notifications.InApp,
+			"marketing": req.Notifications.Marketing,
+		},
+		"privacy": map[string]bool{
+			"profile_public":  req.Privacy.ProfilePublic,
+			"analytics_opt_in": req.Privacy.AnalyticsOptIn,
+		},
+		"display": map[string]interface{}{
+			"view_mode":      req.Display.ViewMode,
+			"items_per_page": req.Display.ItemsPerPage,
+		},
+		"search": map[string]bool{
+			"save_history":  req.Search.SaveHistory,
+			"personalized":  req.Search.Personalized,
+		},
+	}
+
+	// 更新偏好设置
+	profile.Preferences = string(jsonMarshal(preferences))
+	if err := db.Save(&profile).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update preferences"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Preferences updated successfully",
+		"preferences": preferences,
+	})
+}
+
+// GetPreferences 获取用户偏好设置
+// @Summary 获取用户偏好设置
+// @Description 获取当前登录用户的偏好设置
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Success 200 {object} map[string]interface{}
+// @Router /auth/preferences [get]
+func GetPreferences(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	db := models.GetDB()
+
+	// 查找用户档案
+	var profile models.UserProfile
+	if err := db.Where("user_id = ?", userID).First(&profile).Error; err != nil {
+		// 返回默认偏好设置
+		defaultPreferences := map[string]interface{}{
+			"language": "zh",
+			"theme":    "dark",
+			"notifications": map[string]bool{
+				"email":     true,
+				"in_app":    true,
+				"marketing": false,
+			},
+			"privacy": map[string]bool{
+				"profile_public":  true,
+				"analytics_opt_in": true,
+			},
+			"display": map[string]interface{}{
+				"view_mode":      "grid",
+				"items_per_page": 20,
+			},
+			"search": map[string]bool{
+				"save_history":  true,
+				"personalized":  true,
+			},
+		}
+		c.JSON(http.StatusOK, defaultPreferences)
+		return
+	}
+
+	// 解析偏好设置JSON
+	var preferences map[string]interface{}
+	if err := json.Unmarshal([]byte(profile.Preferences), &preferences); err != nil {
+		// 返回默认偏好设置
+		defaultPreferences := map[string]interface{}{
+			"language": "zh",
+			"theme":    "dark",
+			"notifications": map[string]bool{
+				"email":     true,
+				"in_app":    true,
+				"marketing": false,
+			},
+			"privacy": map[string]bool{
+				"profile_public":  true,
+				"analytics_opt_in": true,
+			},
+			"display": map[string]interface{}{
+				"view_mode":      "grid",
+				"items_per_page": 20,
+			},
+			"search": map[string]bool{
+				"save_history":  true,
+				"personalized":  true,
+			},
+		}
+		c.JSON(http.StatusOK, defaultPreferences)
+		return
+	}
+
+	c.JSON(http.StatusOK, preferences)
+}
+
+// 辅助函数：JSON序列化
+func jsonMarshal(v interface{}) []byte {
+	data, _ := json.Marshal(v)
+	return data
+}
+
+// ChangePassword 修改密码
+// @Summary 修改用户密码
+// @Description 修改当前登录用户的密码
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Security Bearer
+// @Param request body ChangePasswordRequest true "密码信息"
+// @Success 200 {object} map[string]interface{}
+// @Router /auth/password [put]
+func ChangePassword(c *gin.Context) {
+	// TODO: 实现修改密码功能
+	c.JSON(http.StatusNotImplemented, gin.H{
+		"error": "Change password functionality not implemented yet",
+	})
+}
+
+// ChangePasswordRequest 修改密码请求
+type ChangePasswordRequest struct {
+	CurrentPassword string `json:"current_password" binding:"required"`
+	NewPassword     string `json:"new_password" binding:"required,min=6"`
 }

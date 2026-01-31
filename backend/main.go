@@ -84,6 +84,12 @@ func main() {
 			auth.POST("/login", authhandler.Login)
 			auth.POST("/register", authhandler.Register)
 			auth.GET("/me", middleware.AuthMiddleware(), authhandler.GetMe)
+			auth.PUT("/profile", middleware.AuthMiddleware(), authhandler.UpdateProfile)
+			auth.PUT("/password", middleware.AuthMiddleware(), authhandler.ChangePassword)
+			auth.GET("/oauth-accounts", middleware.AuthMiddleware(), authhandler.GetOAuthAccounts)
+			auth.DELETE("/oauth-accounts/:provider", middleware.AuthMiddleware(), authhandler.UnbindOAuthAccount)
+			auth.GET("/preferences", middleware.AuthMiddleware(), authhandler.GetPreferences)
+			auth.PUT("/preferences", middleware.AuthMiddleware(), authhandler.UpdatePreferences)
 			auth.GET("/oauth/:provider", authhandler.OAuthLogin)
 			auth.GET("/callback/github", authhandler.GitHubCallback)
 			auth.GET("/callback/google", authhandler.GoogleCallback)
@@ -130,6 +136,10 @@ func main() {
 			adminGroup.GET("/users", admin.ListUsers)
 			adminGroup.GET("/orders", admin.ListOrders)
 			adminGroup.GET("/analytics", admin.GetAnalytics)
+			adminGroup.GET("/analytics/daily", admin.GetDailyAnalytics)
+			adminGroup.GET("/analytics/revenue", admin.GetRevenueAnalytics)
+			adminGroup.GET("/analytics/top-skills", admin.GetTopSkillsAnalytics)
+			adminGroup.GET("/analytics/categories", admin.GetCategoryAnalytics)
 		}
 	}
 

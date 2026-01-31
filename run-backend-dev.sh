@@ -19,11 +19,7 @@ docker compose up -d postgres redis
 echo "⏳ 等待数据库就绪..."
 sleep 5
 
-# 生成 Swagger 文档
-echo "📝 生成 Swagger 文档..."
-cd backend
-~/go/bin/swag init -g main.go -o docs
-
 # 启动后端服务
 echo "🚀 启动后端服务..."
-GIN_MODE=debug go run main.go
+cd backend
+DB_HOST=localhost REDIS_HOST=localhost GIN_MODE=debug go run main.go

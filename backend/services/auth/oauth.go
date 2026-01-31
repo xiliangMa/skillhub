@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"strings"
 	"skillhub/config"
 	"skillhub/lib"
 	"skillhub/models"
@@ -19,6 +21,7 @@ import (
 var (
 	githubOAuthConfig *oauth2.Config
 	googleOAuthConfig *oauth2.Config
+	// 微信使用自定义OAuth实现，不使用标准的oauth2.Config
 )
 
 func InitOAuth() {
@@ -67,6 +70,36 @@ type GoogleUserInfo struct {
 	VerifiedEmail bool   `json:"verified_email"`
 	Name          string `json:"name"`
 	Picture       string `json:"picture"`
+}
+
+// WeChatUserInfo 微信用户信息
+type WeChatUserInfo struct {
+	OpenID     string   `json:"openid"`
+	UnionID    string   `json:"unionid"`
+	Nickname   string   `json:"nickname"`
+	Sex        int      `json:"sex"`
+	Province   string   `json:"province"`
+	City       string   `json:"city"`
+	Country    string   `json:"country"`
+	HeadImgURL string   `json:"headimgurl"`
+	Privilege  []string `json:"privilege"`
+	ErrCode    int      `json:"errcode"`
+	ErrMsg     string   `json:"errmsg"`
+}
+
+// FeishuUserInfo 飞书用户信息
+type FeishuUserInfo struct {
+	Sub           string `json:"sub"`            // 用户唯一标识
+	Name          string `json:"name"`           // 用户姓名
+	Picture       string `json:"picture"`        // 用户头像
+	OpenID        string `json:"open_id"`        // 用户 open_id
+	UnionID       string `json:"union_id"`       // 用户 union_id
+	Email         string `json:"email"`          // 用户邮箱
+	EmailVerified bool   `json:"email_verified"` // 邮箱是否已验证
+	Mobile        string `json:"mobile"`         // 用户手机号
+	MobileVerified bool  `json:"mobile_verified"` // 手机号是否已验证
+	EmployeeNo    string `json:"employee_no"`    // 员工工号
+	EnterpriseEmail string `json:"enterprise_email"` // 企业邮箱
 }
 
 // OAuthLogin OAuth登录
@@ -300,9 +333,12 @@ func GetFeishuAuthURL() (string, error) {
 	}
 	// 飞书OAuth授权URL格式
 	state := uuid.New().String()
-	url := fmt.Sprintf("https://open.feishu.cn/open-apis/authen/v1/authorize?app_id=%s&redirect_uri=%s&scope=contact:user.base:readonly&state=%s",
+	// 请求用户基本信息和邮箱权限
+	scope := "contact:user.base:readonly contact:user.email:readonly"
+	url := fmt.Sprintf("https://open.feishu.cn/open-apis/authen/v1/authorize?app_id=%s&redirect_uri=%s&scope=%s&state=%s",
 		cfg.AppID,
 		cfg.Redirect,
+		scope,
 		state,
 	)
 	return url, nil
@@ -388,20 +424,223 @@ func HandleGoogleCallback(code, state string) (*OAuthUserInfo, error) {
 
 // HandleWeChatCallback 处理微信OAuth回调
 func HandleWeChatCallback(code, state string) (*OAuthUserInfo, error) {
-	// 实现微信OAuth回调处理
-	// 需要调用微信API获取access token和用户信息
+	cfg := config.AppConfig.OAuth.WeChat
+	if cfg.AppID == "" || cfg.AppSecret == "" {
+		return nil, fmt.Errorf("微信OAuth配置不完整")
+	}
+
+	// 1. 使用code获取access_token
+	accessTokenURL := fmt.Sprintf(
+		"https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code",
+		cfg.AppID,
+		cfg.AppSecret,
+		code,
+	)
+
+	resp, err := http.Get(accessTokenURL)
+	if err != nil {
+		return nil, fmt.Errorf("获取access_token失败: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("读取access_token响应失败: %v", err)
+	}
+
+	// 解析access_token响应
+	var tokenResp struct {
+		AccessToken  string `json:"access_token"`
+		ExpiresIn    int    `json:"expires_in"`
+		RefreshToken string `json:"refresh_token"`
+		OpenID       string `json:"openid"`
+		Scope        string `json:"scope"`
+		UnionID      string `json:"unionid"`
+		ErrCode      int    `json:"errcode"`
+		ErrMsg       string `json:"errmsg"`
+	}
+
+	if err := json.Unmarshal(body, &tokenResp); err != nil {
+		return nil, fmt.Errorf("解析access_token响应失败: %v", err)
+	}
+
+	if tokenResp.ErrCode != 0 {
+		return nil, fmt.Errorf("微信API错误: %d - %s", tokenResp.ErrCode, tokenResp.ErrMsg)
+	}
+
+	if tokenResp.AccessToken == "" || tokenResp.OpenID == "" {
+		return nil, fmt.Errorf("无效的微信响应: access_token或openid为空")
+	}
+
+	// 2. 使用access_token和openid获取用户信息
+	userInfoURL := fmt.Sprintf(
+		"https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s",
+		tokenResp.AccessToken,
+		tokenResp.OpenID,
+	)
+
+	userResp, err := http.Get(userInfoURL)
+	if err != nil {
+		return nil, fmt.Errorf("获取用户信息失败: %v", err)
+	}
+	defer userResp.Body.Close()
+
+	userBody, err := ioutil.ReadAll(userResp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("读取用户信息响应失败: %v", err)
+	}
+
+	var wechatUser WeChatUserInfo
+	if err := json.Unmarshal(userBody, &wechatUser); err != nil {
+		return nil, fmt.Errorf("解析用户信息失败: %v", err)
+	}
+
+	// 检查用户信息API是否返回错误
+	if wechatUser.ErrCode != 0 {
+		return nil, fmt.Errorf("微信用户信息API错误: %d - %s", wechatUser.ErrCode, wechatUser.ErrMsg)
+	}
+
+	if wechatUser.OpenID == "" {
+		return nil, fmt.Errorf("无效的微信用户信息: openid为空")
+	}
+
+	// 3. 返回用户信息
+	// 微信不提供邮箱，使用openid生成唯一邮箱
+	email := fmt.Sprintf("wechat_%s@placeholder.com", tokenResp.OpenID)
+	if tokenResp.UnionID != "" {
+		// 优先使用unionid，因为它跨多个公众号/小程序是唯一的
+		email = fmt.Sprintf("wechat_union_%s@placeholder.com", tokenResp.UnionID)
+	}
+
 	return &OAuthUserInfo{
-		Email: fmt.Sprintf("wechat_user_%s@placeholder.com", state),
-		Name:  "WeChat User",
+		Email:    email,
+		Name:     wechatUser.Nickname,
+		Username: wechatUser.Nickname,
 	}, nil
 }
 
 // HandleFeishuCallback 处理飞书OAuth回调
 func HandleFeishuCallback(code, state string) (*OAuthUserInfo, error) {
-	// 实现飞书OAuth回调处理
+	cfg := config.AppConfig.OAuth.Feishu
+	if cfg.AppID == "" || cfg.AppSecret == "" {
+		return nil, fmt.Errorf("飞书OAuth配置不完整")
+	}
+
+	// 1. 使用code获取access_token (飞书旧版OAuth)
+	accessTokenURL := "https://open.feishu.cn/open-apis/authen/v1/access_token"
+
+	// 构建请求体 (飞书旧版OAuth格式)
+	reqBody := map[string]string{
+		"grant_type":    "authorization_code",
+		"client_id":     cfg.AppID,
+		"client_secret": cfg.AppSecret,
+		"code":          code,
+		"redirect_uri":  cfg.Redirect,
+	}
+
+	reqBodyBytes, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("序列化请求体失败: %v", err)
+	}
+
+	resp, err := http.Post(accessTokenURL, "application/json", strings.NewReader(string(reqBodyBytes)))
+	if err != nil {
+		return nil, fmt.Errorf("获取access_token失败: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("读取access_token响应失败: %v", err)
+	}
+
+	// 解析access_token响应 (飞书旧版OAuth格式)
+	var tokenResp struct {
+		Code         int    `json:"code"`
+		Message      string `json:"msg"`
+		Data         struct {
+			AccessToken  string `json:"access_token"`
+			TokenType    string `json:"token_type"`
+			ExpiresIn    int    `json:"expires_in"`
+			RefreshToken string `json:"refresh_token"`
+			Scope        string `json:"scope"`
+		} `json:"data"`
+	}
+
+	if err := json.Unmarshal(body, &tokenResp); err != nil {
+		return nil, fmt.Errorf("解析access_token响应失败: %v", err)
+	}
+
+	if tokenResp.Code != 0 {
+		return nil, fmt.Errorf("飞书API错误: %d - %s", tokenResp.Code, tokenResp.Message)
+	}
+
+	if tokenResp.Data.AccessToken == "" {
+		return nil, fmt.Errorf("无效的飞书响应: access_token为空")
+	}
+
+	// 2. 使用access_token获取用户信息
+	userInfoURL := "https://open.feishu.cn/open-apis/authen/v1/user_info"
+
+	req, err := http.NewRequest("GET", userInfoURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("创建用户信息请求失败: %v", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+tokenResp.Data.AccessToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	userResp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("获取用户信息失败: %v", err)
+	}
+	defer userResp.Body.Close()
+
+	userBody, err := ioutil.ReadAll(userResp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("读取用户信息响应失败: %v", err)
+	}
+
+	// 解析用户信息响应
+	var userInfoResp struct {
+		Code    int            `json:"code"`
+		Message string         `json:"msg"`
+		Data    FeishuUserInfo `json:"data"`
+	}
+
+	if err := json.Unmarshal(userBody, &userInfoResp); err != nil {
+		return nil, fmt.Errorf("解析用户信息失败: %v", err)
+	}
+
+	if userInfoResp.Code != 0 {
+		return nil, fmt.Errorf("飞书用户信息API错误: %d - %s", userInfoResp.Code, userInfoResp.Message)
+	}
+
+	feishuUser := userInfoResp.Data
+
+	// 3. 返回用户信息
+	// 优先使用邮箱，如果没有邮箱则使用open_id生成唯一邮箱
+	email := feishuUser.Email
+	if email == "" {
+		if feishuUser.UnionID != "" {
+			email = fmt.Sprintf("feishu_union_%s@placeholder.com", feishuUser.UnionID)
+		} else if feishuUser.OpenID != "" {
+			email = fmt.Sprintf("feishu_%s@placeholder.com", feishuUser.OpenID)
+		} else {
+			email = fmt.Sprintf("feishu_%s@placeholder.com", feishuUser.Sub)
+		}
+	}
+
+	name := feishuUser.Name
+	if name == "" {
+		name = "Feishu User"
+	}
+
 	return &OAuthUserInfo{
-		Email: fmt.Sprintf("feishu_user_%s@placeholder.com", state),
-		Name:  "Feishu User",
+		Email:    email,
+		Name:     name,
+		Username: name,
 	}, nil
 }
 
