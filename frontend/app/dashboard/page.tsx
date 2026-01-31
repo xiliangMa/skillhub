@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useUser } from "@/contexts/user-context"
 import { useI18n } from "@/contexts/i18n-context"
-import { paymentApi } from "@/lib/api"
+import { paymentApi, dashboardApi } from "@/lib/api"
 import {
   ShoppingCart,
   Download,
@@ -62,11 +62,71 @@ export default function DashboardPage() {
     const fetchDashboardData = async () => {
       setLoading(true)
       try {
-        // 这里应该调用API获取仪表板数据
-        // 暂时使用模拟数据
-        const ordersResponse = await paymentApi.getOrders({ page: 1, page_size: 1 })
+        // 获取用户仪表板数据
+        const dashboardResponse = await dashboardApi.getUserDashboard()
+        const dashboardData = dashboardResponse.data
 
-        // 模拟数据
+        // 转换API数据为前端格式
+        const recentActivity = (dashboardData.recent_activity || []).map((activity) => {
+          let icon
+          switch (activity.type) {
+            case 'purchase':
+              icon = <ShoppingCart className="h-5 w-5 text-green-600" />
+              break
+            case 'download':
+              icon = <Download className="h-5 w-5 text-blue-600" />
+              break
+            case 'view':
+              icon = <BookOpen className="h-5 w-5 text-purple-600" />
+              break
+            default:
+              icon = <Clock className="h-5 w-5 text-slate-600" />
+          }
+
+          return {
+            id: activity.id,
+            type: activity.type,
+            title: activity.title,
+            description: activity.description,
+            timestamp: activity.timestamp,
+            icon
+          }
+        })
+
+        setStats({
+          totalOrders: dashboardData.total_orders || 0,
+          totalSkills: dashboardData.total_skills || 0,
+          totalDownloads: dashboardData.total_downloads || 0,
+          learningProgress: dashboardData.learning_progress || 0,
+          recentActivity,
+          quickActions: [
+            {
+              title: t.dashboard?.quickActions?.browseSkills || '浏览技能',
+              description: t.dashboard?.quickActions?.browseSkillsDesc || '探索新技能',
+              href: '/skills',
+              icon: <Package className="h-6 w-6" />,
+              buttonText: t.dashboard?.quickActions?.browse || '浏览'
+            },
+            {
+              title: t.dashboard?.quickActions?.purchaseHistory || '购买历史',
+              description: t.dashboard?.quickActions?.purchaseHistoryDesc || '查看订单记录',
+              href: '/dashboard/orders',
+              icon: <CreditCard className="h-6 w-6" />,
+              buttonText: t.dashboard?.quickActions?.view || '查看'
+            },
+            {
+              title: t.dashboard?.quickActions?.learningProgress || '学习进度',
+              description: t.dashboard?.quickActions?.learningProgressDesc || '查看学习统计',
+              href: '/dashboard/analytics',
+              icon: <BarChart3 className="h-6 w-6" />,
+              buttonText: t.dashboard?.quickActions?.viewProgress || '查看进度'
+            }
+          ]
+        })
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error)
+        // 错误时使用模拟数据
+        const ordersResponse = await paymentApi.getOrders({ page: 1, page_size: 1 })
         setStats({
           totalOrders: ordersResponse.data?.total || 0,
           totalSkills: 3,
@@ -122,8 +182,6 @@ export default function DashboardPage() {
             }
           ]
         })
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error)
       } finally {
         setLoading(false)
       }

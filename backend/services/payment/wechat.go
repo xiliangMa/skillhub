@@ -49,7 +49,8 @@ func (c *WeChatPayClient) CreatePayment(order *models.Order, subject string) (st
 		return c.createMockPayment(order, subject)
 	}
 
-	// TODO: 实现真实的微信支付API调用
+	// TODO: 实现真实的微信支付API调用（需要配置MchID、APIKey、SerialNo）
+	// 参考微信支付API文档：https://pay.weixin.qq.com/wiki/doc/apiv3/index.shtml
 	// 这里暂时使用模拟支付
 	return c.createMockPayment(order, subject)
 }
@@ -61,8 +62,9 @@ func (c *WeChatPayClient) VerifyCallback(params url.Values) (bool, error) {
 		return true, nil
 	}
 
-	// TODO: 实现微信支付回调签名验证
+	// TODO: 实现微信支付回调签名验证（需要配置完整的商户证书）
 	// 微信支付使用APIv3的签名验证，需要验证HTTP头中的签名和时间戳
+	// 参考：https://pay.weixin.qq.com/wiki/doc/apiv3/wechatpay/wechatpay4_1.shtml
 	return true, nil
 }
 

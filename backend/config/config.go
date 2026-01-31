@@ -95,18 +95,28 @@ type PayPalConfig struct {
 }
 
 type GitHubConfig struct {
-	Token         string
-	Topics        []string
-	SyncStrategy  string
-	SyncInterval  int
-	PerPage       int
-	MaxPages      int
+	Token        string
+	Topics       []string
+	SyncStrategy string
+	SyncInterval int
+	PerPage      int
+	MaxPages     int
 }
 
 var AppConfig *Config
 
 func LoadConfig() *Config {
-	if err := godotenv.Load("../../.env"); err != nil {
+	// Try multiple possible locations for .env file
+	envPaths := []string{"../../.env", "../.env", ".env"}
+	var loaded bool
+	for _, path := range envPaths {
+		if err := godotenv.Load(path); err == nil {
+			log.Printf("Loaded .env from %s", path)
+			loaded = true
+			break
+		}
+	}
+	if !loaded {
 		log.Println("No .env file found, using environment variables")
 	}
 
@@ -186,12 +196,12 @@ func LoadConfig() *Config {
 			},
 		},
 		GitHub: GitHubConfig{
-			Token:         getEnv("GITHUB_TOKEN", ""),
-			Topics:        parseStringSlice(getEnv("GITHUB_TOPICS", "ai,automation,developer-tools,machine-learning"), ","),
-			SyncStrategy:  getEnv("GITHUB_SYNC_STRATEGY", "smart"),
-			SyncInterval:  getEnvInt("GITHUB_SYNC_INTERVAL", 3600),
-			PerPage:       getEnvInt("GITHUB_PER_PAGE", 30),
-			MaxPages:      getEnvInt("GITHUB_MAX_PAGES", 10),
+			Token:        getEnv("GITHUB_TOKEN", ""),
+			Topics:       parseStringSlice(getEnv("GITHUB_TOPICS", "ai,automation,developer-tools,machine-learning"), ","),
+			SyncStrategy: getEnv("GITHUB_SYNC_STRATEGY", "smart"),
+			SyncInterval: getEnvInt("GITHUB_SYNC_INTERVAL", 3600),
+			PerPage:      getEnvInt("GITHUB_PER_PAGE", 30),
+			MaxPages:     getEnvInt("GITHUB_MAX_PAGES", 10),
 		},
 	}
 }

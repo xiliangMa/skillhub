@@ -41,7 +41,8 @@ func (c *StripeClient) CreatePayment(order *models.Order, subject string) (strin
 		return c.createMockPayment(order, subject)
 	}
 
-	// TODO: 实现真实的Stripe API调用
+	// TODO: 实现真实的Stripe API调用（需要配置STRIPE_SECRET_KEY）
+	// 参考Stripe API文档：https://stripe.com/docs/api
 	// 这里暂时使用模拟支付
 	return c.createMockPayment(order, subject)
 }
@@ -73,7 +74,8 @@ func (c *StripeClient) ProcessWebhook(payload []byte, signature string) (*Callba
 		return c.parseWebhookEvent(payload)
 	}
 
-	// TODO: 实现Stripe Webhook签名验证
+	// TODO: 实现Stripe Webhook签名验证（需要配置STRIPE_WEBHOOK_SECRET）
+	// 参考：https://stripe.com/docs/webhooks/signatures
 	// 这里暂时跳过验证
 	return c.parseWebhookEvent(payload)
 }

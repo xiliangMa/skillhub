@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"skillhub/api/admin"
+	"skillhub/api/analytics"
 	authhandler "skillhub/api/auth"
 	"skillhub/api/payment"
 	"skillhub/api/skills"
@@ -29,6 +30,7 @@ import (
 // @BasePath /api/v1
 func main() {
 	config.AppConfig = config.LoadConfig()
+	log.Println("Configuration loaded")
 
 	// 初始化数据库
 	if err := models.InitDB(); err != nil {
@@ -102,7 +104,7 @@ func main() {
 		{
 			skillsGroup.GET("", skills.ListSkills)
 			skillsGroup.GET("/:id", skills.GetSkill)
-			skillsGroup.GET("/:id/download", skills.DownloadSkill)
+			skillsGroup.GET("/:id/download", middleware.AuthMiddleware(), skills.DownloadSkill)
 			skillsGroup.POST("/:id/purchase", middleware.AuthMiddleware(), skills.PurchaseSkill)
 			skillsGroup.GET("/categories", skills.GetCategories)
 			skillsGroup.GET("/hot", skills.GetHotSkills)
@@ -140,6 +142,20 @@ func main() {
 			adminGroup.GET("/analytics/revenue", admin.GetRevenueAnalytics)
 			adminGroup.GET("/analytics/top-skills", admin.GetTopSkillsAnalytics)
 			adminGroup.GET("/analytics/categories", admin.GetCategoryAnalytics)
+		}
+
+		// Analytics routes
+		analyticsGroup := v1.Group("/analytics")
+		{
+			// Public analytics
+			analyticsGroup.GET("/platform", analytics.GetPlatformStats)
+		}
+
+		// Dashboard routes (requires authentication)
+		dashboardGroup := v1.Group("/dashboard")
+		{
+			dashboardGroup.Use(middleware.AuthMiddleware())
+			dashboardGroup.GET("/stats", analytics.GetUserDashboard)
 		}
 	}
 

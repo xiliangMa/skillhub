@@ -308,4 +308,39 @@ export const paymentApi = {
   },
 }
 
+// Dashboard API
+export interface UserDashboardStats {
+  total_orders: number
+  total_skills: number
+  total_downloads: number
+  learning_progress: number
+  recent_activity: Array<{
+    id: string
+    type: 'purchase' | 'download' | 'view'
+    title: string
+    description: string
+    timestamp: string
+  }>
+}
+
+export interface PlatformStats {
+  total_users: number
+  total_skills: number
+  total_downloads: number
+  active_users: number
+  categories: number
+}
+
+export const dashboardApi = {
+  getUserDashboard: async () => {
+    const response = await api.get<ApiResponse<UserDashboardStats>>('/dashboard/stats')
+    return response.data
+  },
+
+  getPlatformStats: async () => {
+    const response = await api.get<ApiResponse<PlatformStats>>('/analytics/platform')
+    return response.data
+  },
+}
+
 export default api

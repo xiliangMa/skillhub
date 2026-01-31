@@ -1,7 +1,10 @@
 package skills
 
 import (
+	"log"
+	"skillhub/config"
 	"skillhub/models"
+	"skillhub/services/payment"
 	"strconv"
 	"time"
 
@@ -12,10 +15,10 @@ import (
 
 // ListSkillsResponse 列表响应
 type ListSkillsResponse struct {
-	List      []models.Skill `json:"list"`
-	Total     int64          `json:"total"`
-	Page      int            `json:"page"`
-	PageSize  int            `json:"page_size"`
+	List     []models.Skill `json:"list"`
+	Total    int64          `json:"total"`
+	Page     int            `json:"page"`
+	PageSize int            `json:"page_size"`
 }
 
 // ListSkills 列出所有skills
@@ -278,7 +281,7 @@ func DownloadSkill(c *gin.Context) {
 		"message": "success",
 		"data": gin.H{
 			"download_url": downloadURL,
-			"skill_id":    id,
+			"skill_id":     id,
 		},
 	})
 }
@@ -306,6 +309,7 @@ func PurchaseSkill(c *gin.Context) {
 
 	// 获取用户ID
 	userID := c.GetString("user_id")
+	log.Printf("Auth middleware user_id: %v", userID)
 	if userID == "" {
 		c.JSON(401, gin.H{
 			"code":    401,
@@ -353,13 +357,13 @@ func PurchaseSkill(c *gin.Context) {
 	// 创建订单
 	orderNo := "ORD" + time.Now().Format("20060102150405")
 	order := models.Order{
-		ID:           uuid.New(),
-		UserID:       userUUID,
+		ID:            uuid.New(),
+		UserID:        userUUID,
 		OrderNo:       orderNo,
-		TotalAmount:  skill.Price,
+		TotalAmount:   skill.Price,
 		PaymentMethod: "pending",
-		Status:       "pending",
-		CreatedAt:    time.Now(),
+		Status:        "pending",
+		CreatedAt:     time.Now(),
 	}
 
 	if err := db.Create(&order).Error; err != nil {
@@ -370,25 +374,71 @@ func PurchaseSkill(c *gin.Context) {
 		return
 	}
 
-	// TODO: 集成支付网关（支付宝/微信支付等）
+	// 创建订单项
+	orderItem := models.OrderItem{
+		ID:       uuid.New(),
+		OrderID:  order.ID,
+		SkillID:  &uid,
+		Quantity: 1,
+		Price:    skill.Price,
+	}
+	if err := db.Create(&orderItem).Error; err != nil {
+		c.JSON(500, gin.H{
+			"code":    500,
+			"message": "Failed to create order item",
+		})
+		return
+	}
 
-	// 这里暂时直接标记为已支付
-	now := time.Now()
-	order.Status = "paid"
-	order.PaidAt = &now
-	db.Save(&order)
+	// 集成支付网关
+	paymentService := payment.GetDefaultPaymentService(*config.AppConfig)
+	paymentURL, err := paymentService.CreatePayment(&order, skill.Name)
+	if err != nil {
+		log.Printf("Failed to create payment: %v", err)
+		c.JSON(500, gin.H{
+			"code":    500,
+			"message": "Failed to create payment",
+		})
+		return
+	}
 
-	// 更新技能购买量
-	db.Model(&skill).UpdateColumn("purchases_count", gorm.Expr("purchases_count + ?", 1))
+	// 检查支付类型，如果是模拟支付，直接标记为已支付
+	if paymentService.GetPaymentType() == payment.PaymentTypeMock || paymentService.GetPaymentType() == payment.PaymentTypeAlipay {
+		// 模拟支付或支付宝模拟支付，直接标记为已支付
+		now := time.Now()
+		order.Status = "paid"
+		order.PaidAt = &now
+		order.PaymentMethod = string(paymentService.GetPaymentType())
+		db.Save(&order)
 
-	c.JSON(200, gin.H{
-		"code":    0,
-		"message": "Purchase successful",
-		"data": gin.H{
-			"order_id": order.ID.String(),
-			"order_no": order.OrderNo,
-			"skill_id": id,
-			"amount":   skill.Price,
-		},
-	})
+		// 更新技能购买量
+		db.Model(&skill).UpdateColumn("purchases_count", gorm.Expr("purchases_count + ?", 1))
+
+		c.JSON(200, gin.H{
+			"code":    0,
+			"message": "Purchase successful",
+			"data": gin.H{
+				"order_id":     order.ID.String(),
+				"order_no":     order.OrderNo,
+				"skill_id":     id,
+				"amount":       skill.Price,
+				"payment_type": string(paymentService.GetPaymentType()),
+			},
+		})
+	} else {
+		// 真实支付，返回支付URL
+		c.JSON(200, gin.H{
+			"code":    0,
+			"message": "Payment created",
+			"data": gin.H{
+				"order_id":          order.ID.String(),
+				"order_no":          order.OrderNo,
+				"skill_id":          id,
+				"amount":            skill.Price,
+				"payment_type":      string(paymentService.GetPaymentType()),
+				"payment_url":       paymentURL,
+				"redirect_required": true,
+			},
+		})
+	}
 }

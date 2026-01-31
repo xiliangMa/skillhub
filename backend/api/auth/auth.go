@@ -179,7 +179,7 @@ func GetMe(c *gin.Context) {
 // @Router /auth/oauth/{provider} [get]
 func OAuthLogin(c *gin.Context) {
 	provider := c.Param("provider")
-	
+
 	// 支持的OAuth提供商
 	validProviders := map[string]bool{
 		"wechat":      true,
@@ -191,7 +191,7 @@ func OAuthLogin(c *gin.Context) {
 
 	if !validProviders[provider] {
 		c.JSON(400, gin.H{
-			"error": "Unsupported OAuth provider",
+			"error":   "Unsupported OAuth provider",
 			"message": fmt.Sprintf("Provider '%s' is not supported. Valid providers: wechat, feishu, xiaohongshu, github, google", provider),
 		})
 		return
@@ -215,14 +215,14 @@ func OAuthLogin(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(500, gin.H{
-			"error": "Failed to generate OAuth URL",
+			"error":   "Failed to generate OAuth URL",
 			"message": err.Error(),
 		})
 		return
 	}
 
 	c.JSON(200, gin.H{
-		"message": "Redirect to OAuth provider",
+		"message":  "Redirect to OAuth provider",
 		"provider": provider,
 		"auth_url": oauthURL,
 	})
@@ -250,7 +250,7 @@ func GitHubCallback(c *gin.Context) {
 	userInfo, err := svcauth.HandleGitHubCallback(code, state)
 	if err != nil {
 		c.JSON(500, gin.H{
-			"error": "Failed to handle GitHub callback",
+			"error":   "Failed to handle GitHub callback",
 			"message": err.Error(),
 		})
 		return
@@ -262,13 +262,13 @@ func GitHubCallback(c *gin.Context) {
 	if err != nil {
 		// 创建新用户
 		user = models.User{
-			ID:       uuid.New(),
-			Email:    userInfo.Email,
-			Username: userInfo.Username,
-			Name:     userInfo.Name,
+			ID:           uuid.New(),
+			Email:        userInfo.Email,
+			Username:     userInfo.Username,
+			Name:         userInfo.Name,
 			PasswordHash: "", // OAuth用户没有密码
-			Role:     models.RoleUser,
-			IsActive: true,
+			Role:         models.RoleUser,
+			IsActive:     true,
 		}
 		if err := models.DB.Create(&user).Error; err != nil {
 			c.JSON(500, gin.H{"error": "Failed to create user"})
@@ -324,7 +324,7 @@ func GoogleCallback(c *gin.Context) {
 	userInfo, err := svcauth.HandleGoogleCallback(code, state)
 	if err != nil {
 		c.JSON(500, gin.H{
-			"error": "Failed to handle Google callback",
+			"error":   "Failed to handle Google callback",
 			"message": err.Error(),
 		})
 		return
@@ -336,12 +336,12 @@ func GoogleCallback(c *gin.Context) {
 	if err != nil {
 		// 创建新用户
 		user = models.User{
-			ID:       uuid.New(),
-			Email:    userInfo.Email,
-			Name:     userInfo.Name,
+			ID:           uuid.New(),
+			Email:        userInfo.Email,
+			Name:         userInfo.Name,
 			PasswordHash: "", // OAuth用户没有密码
-			Role:     models.RoleUser,
-			IsActive: true,
+			Role:         models.RoleUser,
+			IsActive:     true,
 		}
 		if err := models.DB.Create(&user).Error; err != nil {
 			c.JSON(500, gin.H{"error": "Failed to create user"})
@@ -393,7 +393,7 @@ func WeChatCallback(c *gin.Context) {
 	userInfo, err := svcauth.HandleWeChatCallback(code, state)
 	if err != nil {
 		c.JSON(500, gin.H{
-			"error": "Failed to handle WeChat callback",
+			"error":   "Failed to handle WeChat callback",
 			"message": err.Error(),
 		})
 		return
@@ -467,7 +467,7 @@ func FeishuCallback(c *gin.Context) {
 	userInfo, err := svcauth.HandleFeishuCallback(code, state)
 	if err != nil {
 		c.JSON(500, gin.H{
-			"error": "Failed to handle Feishu callback",
+			"error":   "Failed to handle Feishu callback",
 			"message": err.Error(),
 		})
 		return
@@ -541,7 +541,7 @@ func XiaohongshuCallback(c *gin.Context) {
 	userInfo, err := svcauth.HandleXiaohongshuCallback(code, state)
 	if err != nil {
 		c.JSON(500, gin.H{
-			"error": "Failed to handle Xiaohongshu callback",
+			"error":   "Failed to handle Xiaohongshu callback",
 			"message": err.Error(),
 		})
 		return
@@ -717,11 +717,6 @@ func UpdateProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-
-
-
-
-
 // OAuthAccount 第三方账号信息
 type OAuthAccount struct {
 	Provider       string    `json:"provider"`
@@ -785,19 +780,19 @@ func UnbindOAuthAccount(c *gin.Context) {
 	}
 
 	provider := c.Param("provider")
-	
+
 	// 验证提供商
 	validProviders := map[string]bool{
-		"github":       true,
-		"google":       true,
-		"wechat":       true,
-		"feishu":       true,
-		"xiaohongshu":  true,
+		"github":      true,
+		"google":      true,
+		"wechat":      true,
+		"feishu":      true,
+		"xiaohongshu": true,
 	}
 
 	if !validProviders[provider] {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Unsupported OAuth provider",
+			"error":   "Unsupported OAuth provider",
 			"message": fmt.Sprintf("Provider '%s' is not supported", provider),
 		})
 		return
@@ -819,7 +814,7 @@ func UnbindOAuthAccount(c *gin.Context) {
 	// 如果用户没有密码且只有一个OAuth账号，则不允许解绑
 	if user.PasswordHash == "" && oauthCount <= 1 {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Cannot unbind last OAuth account",
+			"error":   "Cannot unbind last OAuth account",
 			"message": "You must set a password before unbinding your last OAuth account",
 		})
 		return
@@ -844,15 +839,15 @@ func UnbindOAuthAccount(c *gin.Context) {
 
 // UpdatePreferencesRequest 更新偏好设置请求
 type UpdatePreferencesRequest struct {
-	Language    string `json:"language"`
-	Theme       string `json:"theme"`
+	Language      string `json:"language"`
+	Theme         string `json:"theme"`
 	Notifications struct {
 		Email     bool `json:"email"`
 		InApp     bool `json:"in_app"`
 		Marketing bool `json:"marketing"`
 	} `json:"notifications"`
 	Privacy struct {
-		ProfilePublic bool `json:"profile_public"`
+		ProfilePublic  bool `json:"profile_public"`
 		AnalyticsOptIn bool `json:"analytics_opt_in"`
 	} `json:"privacy"`
 	Display struct {
@@ -860,7 +855,7 @@ type UpdatePreferencesRequest struct {
 		ItemsPerPage int    `json:"items_per_page"`
 	} `json:"display"`
 	Search struct {
-		SaveHistory bool `json:"save_history"`
+		SaveHistory  bool `json:"save_history"`
 		Personalized bool `json:"personalized"`
 	} `json:"search"`
 }
@@ -910,7 +905,7 @@ func UpdatePreferences(c *gin.Context) {
 			"marketing": req.Notifications.Marketing,
 		},
 		"privacy": map[string]bool{
-			"profile_public":  req.Privacy.ProfilePublic,
+			"profile_public":   req.Privacy.ProfilePublic,
 			"analytics_opt_in": req.Privacy.AnalyticsOptIn,
 		},
 		"display": map[string]interface{}{
@@ -918,8 +913,8 @@ func UpdatePreferences(c *gin.Context) {
 			"items_per_page": req.Display.ItemsPerPage,
 		},
 		"search": map[string]bool{
-			"save_history":  req.Search.SaveHistory,
-			"personalized":  req.Search.Personalized,
+			"save_history": req.Search.SaveHistory,
+			"personalized": req.Search.Personalized,
 		},
 	}
 
@@ -931,7 +926,7 @@ func UpdatePreferences(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Preferences updated successfully",
+		"message":     "Preferences updated successfully",
 		"preferences": preferences,
 	})
 }
@@ -967,7 +962,7 @@ func GetPreferences(c *gin.Context) {
 				"marketing": false,
 			},
 			"privacy": map[string]bool{
-				"profile_public":  true,
+				"profile_public":   true,
 				"analytics_opt_in": true,
 			},
 			"display": map[string]interface{}{
@@ -975,8 +970,8 @@ func GetPreferences(c *gin.Context) {
 				"items_per_page": 20,
 			},
 			"search": map[string]bool{
-				"save_history":  true,
-				"personalized":  true,
+				"save_history": true,
+				"personalized": true,
 			},
 		}
 		c.JSON(http.StatusOK, defaultPreferences)
@@ -996,7 +991,7 @@ func GetPreferences(c *gin.Context) {
 				"marketing": false,
 			},
 			"privacy": map[string]bool{
-				"profile_public":  true,
+				"profile_public":   true,
 				"analytics_opt_in": true,
 			},
 			"display": map[string]interface{}{
@@ -1004,8 +999,8 @@ func GetPreferences(c *gin.Context) {
 				"items_per_page": 20,
 			},
 			"search": map[string]bool{
-				"save_history":  true,
-				"personalized":  true,
+				"save_history": true,
+				"personalized": true,
 			},
 		}
 		c.JSON(http.StatusOK, defaultPreferences)
@@ -1032,9 +1027,66 @@ func jsonMarshal(v interface{}) []byte {
 // @Success 200 {object} map[string]interface{}
 // @Router /auth/password [put]
 func ChangePassword(c *gin.Context) {
-	// TODO: 实现修改密码功能
-	c.JSON(http.StatusNotImplemented, gin.H{
-		"error": "Change password functionality not implemented yet",
+	// 获取当前用户ID
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Unauthorized",
+		})
+		return
+	}
+
+	// 解析请求
+	var req ChangePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// 获取数据库连接
+	db := models.GetDB()
+
+	// 查询用户
+	var user models.User
+	if err := db.First(&user, "id = ?", userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "User not found",
+		})
+		return
+	}
+
+	// 验证当前密码
+	if !lib.CheckPassword(req.CurrentPassword, user.PasswordHash) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Current password is incorrect",
+		})
+		return
+	}
+
+	// 哈希新密码
+	newHash, err := lib.HashPassword(req.NewPassword)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to hash new password",
+		})
+		return
+	}
+
+	// 更新密码哈希
+	user.PasswordHash = newHash
+	if err := db.Save(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to update password",
+		})
+		return
+	}
+
+	// 返回成功响应
+	c.JSON(http.StatusOK, gin.H{
+		"code":    0,
+		"message": "Password updated successfully",
 	})
 }
 

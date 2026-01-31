@@ -40,3 +40,16 @@ logs/
 # Docker
 docker/data/
 docker/logs/
+
+# PID files
+*.pid
+backend.pid
+skillhub.pid
+
+# Backend binary
+backend/skillhub
+
+# Temporary files
+/tmp/
+*.tmp
+*.temp

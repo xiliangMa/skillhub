@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SkillCard } from "@/components/skill-card"
 import { Search, TrendingUp, Zap, ArrowRight, Users, Database, Code2, Cpu, Activity, Download } from "lucide-react"
-import { skillsApi, type Skill } from "@/lib/api"
+import { skillsApi, dashboardApi, type Skill } from "@/lib/api"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { useI18n } from "@/contexts/i18n-context"
@@ -24,22 +24,42 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [hot, trending] = await Promise.all([
+        const [hot, trending, platformStats] = await Promise.all([
           skillsApi.getHot(4),
           skillsApi.getTrending(4),
+          dashboardApi.getPlatformStats(),
         ])
+        console.log('Platform stats response:', platformStats)
         setHotSkills(hot.data || [])
         setTrendingSkills(trending.data || [])
 
-        // Mock stats data
+        // Use real platform stats data
+        if (platformStats.data) {
+          console.log('Setting real stats:', platformStats.data)
+          setStats({
+            totalSkills: platformStats.data.total_skills || 0,
+            totalDownloads: platformStats.data.total_downloads || 0,
+            activeUsers: platformStats.data.active_users || 0,
+            categories: platformStats.data.categories || 0
+          })
+        } else {
+          // Fallback to mock data if API fails
+          setStats({
+            totalSkills: 150,
+            totalDownloads: 50000,
+            activeUsers: 12000,
+            categories: 8
+          })
+        }
+      } catch (error) {
+        console.error('Failed to fetch skills or platform stats:', error)
+        // Fallback to mock data on error
         setStats({
           totalSkills: 150,
           totalDownloads: 50000,
           activeUsers: 12000,
           categories: 8
         })
-      } catch (error) {
-        console.error('Failed to fetch skills:', error)
       } finally {
         setLoading(false)
       }

@@ -214,7 +214,7 @@ func (e *SyncEngine) syncTopic(topic string, fullSync bool) (newCount int, updat
 // saveOrUpdateSkill 保存或更新技能到数据库
 func (e *SyncEngine) saveOrUpdateSkill(skill *models.Skill) (isNew bool, err error) {
 	var existingSkill models.Skill
-	result := e.db.Where("github_url = ?", skill.GitHubURL).First(&existingSkill)
+	result := e.db.Where("git_hub_url = ?", skill.GitHubURL).First(&existingSkill)
 
 	if result.Error == nil {
 		// 更新现有技能

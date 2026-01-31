@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"net/http"
-	"strings"
 	"skillhub/lib"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,8 +12,7 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
-			c.Abort()
+			c.Next()
 			return
 		}
 
@@ -25,7 +24,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("user_id", claims.UserID)
+		c.Set("user_id", claims.UserID.String())
 		c.Set("email", claims.Email)
 		c.Set("role", claims.Role)
 

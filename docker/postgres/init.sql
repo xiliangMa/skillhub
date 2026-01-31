@@ -130,6 +130,18 @@ CREATE TABLE IF NOT EXISTS transactions (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Create download_records table
+CREATE TABLE IF NOT EXISTS download_records (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    skill_id UUID REFERENCES skills(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+    ip_address VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create index for user and skill queries
+CREATE INDEX IF NOT EXISTS idx_download_user_skill ON download_records(user_id, skill_id);
+
 -- Create skill_analytics table
 CREATE TABLE IF NOT EXISTS skill_analytics (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
