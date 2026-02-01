@@ -21,6 +21,7 @@ frontend/out/
 frontend/.turbo/
 frontend/.DS_Store
 *.pem
+frontend/tsconfig.tsbuildinfo
 
 # Database
 data/
@@ -48,6 +49,7 @@ skillhub.pid
 
 # Backend binary
 backend/skillhub
+backend/skillhub-backend
 
 # Temporary files
 /tmp/
