@@ -14,6 +14,7 @@ interface Translations {
     loggedIn: string
     logout: string
     personalCenter: string
+    adminDashboard: string
   }
   home: {
     heroTitle: string
@@ -220,15 +221,16 @@ interface Translations {
 
 const translations: Record<Locale, Translations> = {
   en: {
-     nav: {
-       searchPlaceholder: "Search skills...",
-       login: "Login",
-       register: "Register",
-       switchLanguage: "Switch Language",
-       loggedIn: "Logged in",
-       logout: "Logout",
-       personalCenter: "Personal Center",
-     },
+      nav: {
+        searchPlaceholder: "Search skills...",
+        login: "Login",
+        register: "Register",
+        switchLanguage: "Switch Language",
+        loggedIn: "Logged in",
+        logout: "Logout",
+        personalCenter: "Personal Center",
+        adminDashboard: "Admin Dashboard",
+      },
     home: {
       heroTitle: "Embrace AI",
       heroSubtitle: "The best AI assistant skills marketplace for your applications",
@@ -432,15 +434,16 @@ const translations: Record<Locale, Translations> = {
     },
   },
   zh: {
-     nav: {
-       searchPlaceholder: "搜索skills...",
-       login: "登录",
-       register: "注册",
-       switchLanguage: "切换语言",
-       loggedIn: "已登录",
-       logout: "退出登录",
-       personalCenter: "个人中心",
-     },
+      nav: {
+        searchPlaceholder: "搜索skills...",
+        login: "登录",
+        register: "注册",
+        switchLanguage: "切换语言",
+        loggedIn: "已登录",
+        logout: "退出登录",
+        personalCenter: "个人中心",
+        adminDashboard: "后台管理",
+      },
     home: {
       heroTitle: "拥抱AI",
       heroSubtitle: "最好的AI助手技能市场，为您的应用程序提供强大支持",
