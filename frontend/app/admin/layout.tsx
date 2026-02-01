@@ -135,8 +135,8 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-950">
-      {/* 移动端顶部导航栏 */}
+     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-950">
+      {/* 移动端菜单按钮 */}
       <div className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-slate-200 bg-white/80 px-4 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/80 md:hidden">
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -149,21 +149,9 @@ export default function AdminLayout({
             <Menu className="h-6 w-6 text-slate-700 dark:text-slate-300" />
           )}
         </button>
-
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur opacity-50" />
-            <div className="relative w-8 h-8 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center">
-              <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            </div>
-          </div>
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-            {user.name || user.username || user.email}
-          </span>
-        </div>
       </div>
 
-      <div className="flex">
+       <div className="flex">
         {/* 桌面端侧边栏 */}
         <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
           <div className="flex flex-col flex-1 min-h-0 border-r border-slate-200 bg-white/80 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/80">
