@@ -155,6 +155,23 @@ export default function AdminDashboard() {
 
   const OverviewContent = () => (
     <div className="space-y-6">
+      {/* 头部欢迎区域 */}
+      <div className="rounded-2xl bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 p-6 border border-slate-200/50">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">
+              {t.admin?.welcome || '欢迎回来'}, {user?.name || user?.username || user?.email || '管理员'}!
+            </h1>
+            <p className="mt-2 text-slate-600">
+              {t.admin?.subtitle || '这是您的管理仪表板，可以监控平台数据、管理用户和技能。'}
+            </p>
+          </div>
+          <div className="p-3 rounded-xl bg-gradient-to-br from-blue-100/50 to-purple-100/50">
+            <TrendingUp className="w-8 h-8 text-blue-600" />
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Revenue Card */}
         <div className="relative group">

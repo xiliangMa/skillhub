@@ -139,6 +139,8 @@ interface Translations {
   }
   admin: {
     dashboardTitle: string
+    welcome: string
+    subtitle: string
     overview: string
     overviewDesc: string
     skillsManagement: string
@@ -354,7 +356,9 @@ const translations: Record<Locale, Translations> = {
     },
     admin: {
       dashboardTitle: "Admin Dashboard",
-       overview: "Overview",
+      welcome: "Welcome back, Admin!",
+      subtitle: "This is your admin dashboard to monitor platform data, manage users and skills.",
+      overview: "Overview",
        overviewDesc: "Platform overview and statistics",
        skillsManagement: "Skills Management",
        skillsManagementDesc: "Manage all skills on the platform",
@@ -567,7 +571,9 @@ const translations: Record<Locale, Translations> = {
     },
     admin: {
       dashboardTitle: "管理后台",
-       overview: "概览",
+      welcome: "欢迎回来, 管理员!",
+      subtitle: "这是您的管理仪表板，可以监控平台数据、管理用户和技能。",
+      overview: "概览",
        overviewDesc: "数据概览和平台统计",
        skillsManagement: "技能管理",
        skillsManagementDesc: "管理平台上的所有技能",
