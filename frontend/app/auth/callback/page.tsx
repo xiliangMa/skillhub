@@ -23,12 +23,17 @@ export default function OAuthCallbackPage() {
 
     // 如果有 token 和 user，直接使用
     if (token && userStr) {
-      try {
+       try {
         const user = JSON.parse(decodeURIComponent(userStr))
         loginUser(user, token)
         setStatus('success')
         setTimeout(() => {
-          router.push('/')
+          // 管理员跳转到管理后台，普通用户跳转到个人中心
+          if (user.role === 'admin') {
+            router.push('/admin')
+          } else {
+            router.push('/dashboard')
+          }
         }, 1000)
       } catch (error) {
         console.error('Failed to parse user data:', error)
@@ -64,12 +69,17 @@ export default function OAuthCallbackPage() {
         throw new Error('OAuth callback failed')
       }
 
-      const data = await response.json()
+       const data = await response.json()
       if (data.token && data.user) {
         loginUser(data.user, data.token)
         setStatus('success')
         setTimeout(() => {
-          router.push('/')
+          // 管理员跳转到管理后台，普通用户跳转到个人中心
+          if (data.user.role === 'admin') {
+            router.push('/admin')
+          } else {
+            router.push('/dashboard')
+          }
         }, 1000)
       } else {
         throw new Error('Invalid response from server')

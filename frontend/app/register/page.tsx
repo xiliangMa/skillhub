@@ -42,11 +42,8 @@ export default function RegisterPage() {
       const response = await authApi.register(email, password, name)
       login(response.user, response.token)
       
-      if (locale === 'zh') {
-        router.push('/zh')
-      } else {
-        router.push('/')
-      }
+       // 新注册用户跳转到个人中心
+      router.push('/dashboard')
     } catch (err: any) {
       setError(t.auth.errorRegisterFailed || '注册失败，该邮箱可能已被使用')
     } finally {

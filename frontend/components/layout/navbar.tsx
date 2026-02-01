@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { User, Menu, LogOut, UserCircle } from "lucide-react"
+import { User, Menu, LogOut, UserCircle, LayoutDashboard } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { useUser } from "@/contexts/user-context"
@@ -60,11 +60,19 @@ export function Navbar() {
                 <span className="text-sm font-medium">{user.name || user.username || user.email}</span>
               </Button>
 
-              {userMenuOpen && (
+               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-xl rounded-lg shadow-2xl border border-slate-200 py-1 animate-in slide-in-from-top-2 duration-200">
                   <div className="px-4 py-2 border-b border-slate-200 text-xs text-slate-500 font-mono">
                     {t.nav.loggedIn || '已登录'}
                   </div>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="w-full px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-100 flex items-center gap-2 transition-colors"
+                  >
+                     <LayoutDashboard className="h-4 w-4" />
+                    {t.nav.personalCenter || "个人中心"}
+                  </Link>
                   <button
                     onClick={handleLogout}
                     className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
@@ -110,7 +118,7 @@ export function Navbar() {
               <LanguageSwitcher />
             </div>
 
-            {loading ? (
+             {loading ? (
               <div className="h-9 bg-slate-200 animate-pulse rounded"></div>
             ) : user ? (
               <div className="flex flex-col gap-2">
@@ -123,6 +131,19 @@ export function Navbar() {
                   </div>
                   <span className="text-sm font-medium text-slate-700">{user.name || user.username || user.email}</span>
                 </div>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full"
+                >
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-slate-700 hover:bg-slate-100"
+                  >
+                     <LayoutDashboard className="h-4 w-4 mr-2" />
+                    {t.nav.personalCenter || "个人中心"}
+                  </Button>
+                </Link>
                 <Button
                   variant="ghost"
                   onClick={handleLogout}

@@ -27,7 +27,12 @@ export default function LoginPage() {
       const response = await authApi.login(email, password)
       login(response.user, response.token)
       
-      router.push('/zh')
+       // 管理员跳转到管理后台，普通用户跳转到个人中心
+      if (response.user.role === 'admin') {
+        router.push('/admin')
+      } else {
+        router.push('/dashboard')
+      }
     } catch (err: any) {
       setError('登录失败，请检查邮箱和密码')
     } finally {
