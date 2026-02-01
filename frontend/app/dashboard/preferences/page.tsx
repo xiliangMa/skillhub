@@ -163,13 +163,19 @@ export default function PreferencesPage() {
 
   // 处理偏好设置更新
   const updatePreference = <K extends keyof Preferences>(category: K, key: keyof Preferences[K], value: any) => {
-    setPreferences(prev => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        [key]: value
+    setPreferences(prev => {
+      const categoryValue = prev[category]
+      if (typeof categoryValue !== 'object' || categoryValue === null) {
+        return prev
       }
-    }))
+      return {
+        ...prev,
+        [category]: {
+          ...categoryValue,
+          [key]: value
+        }
+      }
+    })
   }
 
   if (loading) {
@@ -260,7 +266,7 @@ export default function PreferencesPage() {
                   </div>
                   <Select
                     value={preferences.language}
-                    onValueChange={(value) => updatePreference("language", "language", value)}
+                     onValueChange={(value) => setPreferences(prev => ({...prev, language: value}))}
                   >
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="选择语言" />
@@ -293,7 +299,7 @@ export default function PreferencesPage() {
                   </div>
                   <Select
                     value={preferences.theme}
-                    onValueChange={(value) => updatePreference("theme", "theme", value)}
+                     onValueChange={(value) => setPreferences(prev => ({...prev, theme: value}))}
                   >
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="选择主题" />
@@ -329,7 +335,7 @@ export default function PreferencesPage() {
                         ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                         : "border-slate-200 dark:border-slate-800"
                     }`}
-                    onClick={() => updatePreference("theme", "theme", "light")}
+                     onClick={() => setPreferences(prev => ({...prev, theme: "light"}))}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <Sun className="h-4 w-4 text-slate-600" />
@@ -351,7 +357,7 @@ export default function PreferencesPage() {
                         ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                         : "border-slate-200 dark:border-slate-800"
                     }`}
-                    onClick={() => updatePreference("theme", "theme", "dark")}
+                     onClick={() => setPreferences(prev => ({...prev, theme: "dark"}))}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <Moon className="h-4 w-4 text-slate-600" />
@@ -373,7 +379,7 @@ export default function PreferencesPage() {
                         ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                         : "border-slate-200 dark:border-slate-800"
                     }`}
-                    onClick={() => updatePreference("theme", "theme", "auto")}
+                     onClick={() => setPreferences(prev => ({...prev, theme: "auto"}))}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <Settings className="h-4 w-4 text-slate-600" />

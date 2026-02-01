@@ -8,6 +8,9 @@ import { CheckCircle, XCircle, ArrowLeft, CreditCard } from "lucide-react"
 import Link from "next/link"
 import { paymentApi } from "@/lib/api"
 
+export const dynamic = "force-dynamic"
+export const runtime = 'edge'
+
 export default function MockPaymentPage() {
   const searchParams = useSearchParams()
   const router = useRouter()

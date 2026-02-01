@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { skillsApi } from "@/lib/api"
+import { categoriesApi } from "@/lib/api"
 import Link from "next/link"
 import { Database, TrendingUp, Zap, Shield, Globe, Code, ArrowRight } from "lucide-react"
 
@@ -14,8 +14,8 @@ export default function CategoriesPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await skillsApi.getCategories()
-        setCategories(response.data || [])
+        const response = await categoriesApi.getAll()
+        setCategories(response.data || response || [])
       } catch (error) {
         console.error('Failed to fetch categories:', error)
       } finally {

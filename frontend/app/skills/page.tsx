@@ -10,6 +10,9 @@ import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { useI18n } from "@/contexts/i18n-context"
 
+export const dynamic = "force-dynamic"
+export const runtime = 'edge'
+
 export default function SkillsPage() {
   const { t } = useI18n()
   const searchParams = useSearchParams()

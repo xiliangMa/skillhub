@@ -44,6 +44,20 @@ interface Translations {
     getStart: string
     buy: string
   }
+  categories: {
+    title: string
+    subtitle: string
+    tools: string
+    development: string
+    dataAi: string
+    business: string
+    security: string
+    integration: string
+    exploreSkills: string
+    readyToFind: string
+    readyToFindDesc: string
+    browseAll: string
+  }
   auth: {
     loginTitle: string
     loginSubtitle: string
@@ -73,9 +87,13 @@ interface Translations {
     errorEmailExists: string
     errorOAuthLoginFailed: string
     errorOAuthRegisterFailed: string
-    passwordNotMatch: string
-    passwordTooShortHint: string
-  }
+     passwordNotMatch: string
+     passwordTooShortHint: string
+     login: string
+     register: string
+     name: string
+     namePlaceholder: string
+   }
   features: {
     quickIntegration: {
       title: string
@@ -120,9 +138,13 @@ interface Translations {
   admin: {
     dashboardTitle: string
     overview: string
+    overviewDesc: string
     skillsManagement: string
+    skillsManagementDesc: string
     usersManagement: string
+    usersManagementDesc: string
     ordersManagement: string
+    ordersManagementDesc: string
     totalRevenue: string
     totalOrders: string
     totalUsers: string
@@ -136,6 +158,12 @@ interface Translations {
     noOrders: string
     statusPaid: string
     statusPending: string
+    categories: string
+    categoriesDesc: string
+    analytics: string
+    analyticsDesc: string
+    settings: string
+    settingsDesc: string
   }
   dashboard: {
     nav: {
@@ -272,8 +300,12 @@ const translations: Record<Locale, Translations> = {
       errorEmailExists: "This email is already registered, please use another email or login directly",
       errorOAuthLoginFailed: "login failed",
       errorOAuthRegisterFailed: "registration failed",
-      passwordNotMatch: "Passwords do not match",
-      passwordTooShortHint: "Password must be at least 6 characters",
+       passwordNotMatch: "Passwords do not match",
+       passwordTooShortHint: "Password must be at least 6 characters",
+       login: "Login",
+       register: "Register",
+       name: "Name",
+       namePlaceholder: "Your full name",
     },
     features: {
       quickIntegration: {
@@ -318,11 +350,15 @@ const translations: Record<Locale, Translations> = {
     },
     admin: {
       dashboardTitle: "Admin Dashboard",
-      overview: "Overview",
-      skillsManagement: "Skills Management",
-      usersManagement: "Users Management",
-      ordersManagement: "Orders Management",
-      totalRevenue: "Total Revenue",
+       overview: "Overview",
+       overviewDesc: "Platform overview and statistics",
+       skillsManagement: "Skills Management",
+       skillsManagementDesc: "Manage all skills on the platform",
+       usersManagement: "Users Management",
+       usersManagementDesc: "Manage user accounts and permissions",
+       ordersManagement: "Orders Management",
+       ordersManagementDesc: "View and process all orders",
+       totalRevenue: "Total Revenue",
       totalOrders: "Total Orders",
       totalUsers: "Total Users",
       totalSkills: "Total Skills",
@@ -331,10 +367,16 @@ const translations: Record<Locale, Translations> = {
       activeUsers: "active users",
       hotSkills: "hot",
       recentOrders: "Recent Orders",
-      recentOrdersDesc: "Latest order records",
-      noOrders: "No orders data",
-      statusPaid: "Paid",
-      statusPending: "Pending",
+       recentOrdersDesc: "Latest order records",
+       noOrders: "No orders data",
+       statusPaid: "Paid",
+       statusPending: "Pending",
+       categories: "Categories Management",
+       categoriesDesc: "Manage skill categories and tags",
+       analytics: "Analytics",
+       analyticsDesc: "Detailed data analysis and reports",
+       settings: "System Settings",
+       settingsDesc: "Platform configuration and parameter settings",
     },
     dashboard: {
       nav: {
@@ -469,8 +511,12 @@ const translations: Record<Locale, Translations> = {
       errorEmailExists: "该邮箱已被注册，请使用其他邮箱或直接登录",
       errorOAuthLoginFailed: "登录失败",
       errorOAuthRegisterFailed: "注册失败",
-      passwordNotMatch: "两次密码输入不一致",
-      passwordTooShortHint: "密码至少需要6个字符",
+       passwordNotMatch: "两次密码输入不一致",
+       passwordTooShortHint: "密码至少需要6个字符",
+       login: "登录",
+       register: "注册",
+       name: "姓名",
+       namePlaceholder: "请输入您的全名",
     },
     features: {
       quickIntegration: {
@@ -515,11 +561,15 @@ const translations: Record<Locale, Translations> = {
     },
     admin: {
       dashboardTitle: "管理后台",
-      overview: "概览",
-      skillsManagement: "技能管理",
-      usersManagement: "用户管理",
-      ordersManagement: "订单管理",
-      totalRevenue: "总收入",
+       overview: "概览",
+       overviewDesc: "数据概览和平台统计",
+       skillsManagement: "技能管理",
+       skillsManagementDesc: "管理平台上的所有技能",
+       usersManagement: "用户管理",
+       usersManagementDesc: "管理用户账户和权限",
+       ordersManagement: "订单管理",
+       ordersManagementDesc: "查看和处理所有订单",
+       totalRevenue: "总收入",
       totalOrders: "总订单数",
       totalUsers: "用户数",
       totalSkills: "技能数",
@@ -528,10 +578,16 @@ const translations: Record<Locale, Translations> = {
       activeUsers: "活跃用户",
       hotSkills: "热门",
       recentOrders: "最近订单",
-      recentOrdersDesc: "最新的订单记录",
-      noOrders: "暂无订单数据",
-      statusPaid: "已支付",
-      statusPending: "待支付",
+       recentOrdersDesc: "最新的订单记录",
+       noOrders: "暂无订单数据",
+       statusPaid: "已支付",
+       statusPending: "待支付",
+       categories: "分类管理",
+       categoriesDesc: "管理技能分类和标签",
+       analytics: "数据分析",
+       analyticsDesc: "详细数据分析和报告",
+       settings: "系统设置",
+       settingsDesc: "平台配置和参数设置",
     },
     dashboard: {
       nav: {

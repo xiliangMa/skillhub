@@ -82,6 +82,18 @@ export interface Category {
   children?: Category[]
 }
 
+export interface UserProfile {
+  bio?: string
+  avatar_url?: string
+  timezone?: string
+  location?: string
+  website?: string
+  github?: string
+  twitter?: string
+  linkedin?: string
+  preferences?: string
+}
+
 export interface User {
   id: string
   email: string
@@ -91,6 +103,7 @@ export interface User {
   is_active: boolean
   created_at: string
   updated_at: string
+  profile?: UserProfile
 }
 
 export interface LoginResponse {
@@ -107,6 +120,8 @@ export interface Order {
   status: string
   created_at: string
   paid_at: string | null
+  user_email?: string
+  user?: User
 }
 
 export interface Analytics {

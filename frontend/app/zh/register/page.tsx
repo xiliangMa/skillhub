@@ -51,8 +51,8 @@ export default function RegisterPage() {
   const handleOAuthLogin = async (provider: string) => {
     try {
       const response = await authApi.getOAuthUrl(provider)
-      if (response?.auth_url) {
-        window.location.href = response.auth_url
+      if (response?.url) {
+        window.location.href = response.url
       }
     } catch (error) {
       console.error('OAuth login failed:', error)

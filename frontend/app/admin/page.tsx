@@ -1,32 +1,23 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import api, { authApi, type User, type Order, type Analytics, type Skill } from "@/lib/api"
-import { Users, DollarSign, ShoppingCart, TrendingUp, Search, Edit, Eye, LayoutDashboard, Zap, Database, CreditCard, Cpu, Shield, Globe, Activity, ChevronRight } from "lucide-react"
+import api, { type User, type Order, type Analytics, type Skill } from "@/lib/api"
+import { Users, DollarSign, ShoppingCart, TrendingUp, Search, LayoutDashboard, Zap, CreditCard, Activity, ChevronRight } from "lucide-react"
 import { useI18n } from "@/contexts/i18n-context"
 import { useUser } from "@/contexts/user-context"
 
 export default function AdminDashboard() {
   const { t } = useI18n()
   const router = useRouter()
+  const pathname = usePathname()
   const { user, loading: userLoading } = useUser()
-  const [activeTab, setActiveTab] = useState<'overview' | 'skills' | 'users' | 'orders'>('overview')
-
-  // 定义导航项
-  const navItems = [
-    { id: 'overview' as const, label: t.admin.overview, icon: LayoutDashboard, description: '数据概览', color: 'from-purple-500 to-indigo-500' },
-    { id: 'skills' as const, label: t.admin.skillsManagement, icon: Zap, description: '技能管理', color: 'from-blue-500 to-cyan-500' },
-    { id: 'users' as const, label: t.admin.usersManagement, icon: Users, description: '用户管理', color: 'from-green-500 to-emerald-500' },
-    { id: 'orders' as const, label: t.admin.ordersManagement, icon: CreditCard, description: '订单管理', color: 'from-orange-500 to-red-500' },
-  ]
+  
   const [loading, setLoading] = useState(true)
   const [skills, setSkills] = useState<Skill[]>([])
   const [users, setUsers] = useState<User[]>([])
@@ -36,6 +27,17 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('')
   const [sortField, setSortField] = useState<string>('')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+
+  // 根据路径名确定当前活动标签
+  const getActiveTab = () => {
+    if (pathname.includes('/admin/skills')) return 'skills'
+    if (pathname.includes('/admin/users')) return 'users'
+    if (pathname.includes('/admin/orders')) return 'orders'
+    if (pathname.includes('/admin/analytics')) return 'analytics'
+    return 'overview'
+  }
+  
+  const activeTab = getActiveTab()
 
   useEffect(() => {
     // 等待用户信息加载完成
@@ -77,7 +79,7 @@ export default function AdminDashboard() {
       switch (activeTab) {
         case 'overview':
           const analyticsRes = await api.get('/admin/analytics')
-          setAnalytics(analyticsRes.data)
+          setAnalytics(analyticsRes.data?.data || analyticsRes.data)
           break
         case 'skills':
           const skillsRes = await api.get('/admin/skills', { params })
@@ -115,6 +117,11 @@ export default function AdminDashboard() {
           setSkills([])
           setUsers([])
           break
+        case 'analytics':
+          // 对于分析页面，可以加载更多数据
+          const analyticsRes2 = await api.get('/admin/analytics')
+          setAnalytics(analyticsRes2.data?.data || analyticsRes2.data)
+          break
       }
     } catch (error) {
       console.error('Failed to fetch data:', error)
@@ -138,7 +145,7 @@ export default function AdminDashboard() {
   }
 
   useEffect(() => {
-    if (activeTab !== 'overview') {
+    if (activeTab !== 'overview' && activeTab !== 'analytics') {
       const timer = setTimeout(() => {
         fetchData(1)
       }, 300)
@@ -161,12 +168,12 @@ export default function AdminDashboard() {
                 +12.5%
               </div>
             </div>
-            <h3 className="text-sm text-slate-500 mb-2">{t.admin.totalRevenue}</h3>
+            <h3 className="text-sm text-slate-500 mb-2">{t.admin.totalRevenue || '总收入'}</h3>
             <div className="text-3xl font-bold text-slate-900 mb-1">
               {analytics?.total_revenue ? `$${analytics.total_revenue.toFixed(2)}` : '$0.00'}
             </div>
             <p className="text-xs text-slate-400">
-              {analytics?.today_orders || 0} {t.admin.todayOrders}
+              {analytics?.today_orders || 0} {t.admin.todayOrders || '今日订单'}
             </p>
           </div>
         </div>
@@ -183,12 +190,12 @@ export default function AdminDashboard() {
                 +8.2%
               </div>
             </div>
-            <h3 className="text-sm text-slate-500 mb-2">{t.admin.totalOrders}</h3>
+            <h3 className="text-sm text-slate-500 mb-2">{t.admin.totalOrders || '总订单'}</h3>
             <div className="text-3xl font-bold text-slate-900 mb-1">
               {analytics?.total_orders || 0}
             </div>
             <p className="text-xs text-slate-400">
-              {analytics?.pending_orders || 0} {t.admin.pendingOrders}
+              {analytics?.pending_orders || 0} {t.admin.pendingOrders || '待处理订单'}
             </p>
           </div>
         </div>
@@ -205,12 +212,12 @@ export default function AdminDashboard() {
                 +15.3%
               </div>
             </div>
-            <h3 className="text-sm text-slate-500 mb-2">{t.admin.totalUsers}</h3>
+            <h3 className="text-sm text-slate-500 mb-2">{t.admin.totalUsers || '总用户'}</h3>
             <div className="text-3xl font-bold text-slate-900 mb-1">
               {analytics?.total_users || 0}
             </div>
             <p className="text-xs text-slate-400">
-              {analytics?.active_users || 0} {t.admin.activeUsers}
+              {analytics?.active_users || 0} {t.admin.activeUsers || '活跃用户'}
             </p>
           </div>
         </div>
@@ -227,12 +234,12 @@ export default function AdminDashboard() {
                 +20.1%
               </div>
             </div>
-            <h3 className="text-sm text-slate-500 mb-2">{t.admin.totalSkills}</h3>
+            <h3 className="text-sm text-slate-500 mb-2">{t.admin.totalSkills || '总技能'}</h3>
             <div className="text-3xl font-bold text-slate-900 mb-1">
               {analytics?.total_skills || 0}
             </div>
             <p className="text-xs text-slate-400">
-              {analytics?.hot_skills || 0} {t.admin.hotSkills}
+              {analytics?.hot_skills || 0} {t.admin.hotSkills || '热门技能'}
             </p>
           </div>
         </div>
@@ -244,8 +251,8 @@ export default function AdminDashboard() {
           <div className="p-6 border-b border-slate-200/50">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-bold text-slate-900">{t.admin.recentOrders}</h3>
-                <p className="text-sm text-slate-500 mt-1">{t.admin.recentOrdersDesc}</p>
+                <h3 className="text-xl font-bold text-slate-900">{t.admin.recentOrders || '最近订单'}</h3>
+                <p className="text-sm text-slate-500 mt-1">{t.admin.recentOrdersDesc || '最近的订单记录'}</p>
               </div>
               <div className="p-3 rounded-xl bg-gradient-to-br from-blue-100/50 to-purple-100/50">
                 <ShoppingCart className="w-6 h-6 text-blue-600" />
@@ -277,7 +284,7 @@ export default function AdminDashboard() {
                           ? 'bg-green-100 text-green-700 border-green-200'
                           : 'bg-yellow-100 text-yellow-700 border-yellow-200'
                         }>
-                          {order.status === 'paid' ? t.admin.statusPaid : t.admin.statusPending}
+                          {order.status === 'paid' ? (t.admin.statusPaid || '已支付') : (t.admin.statusPending || '待处理')}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-slate-500">
@@ -290,7 +297,7 @@ export default function AdminDashboard() {
             ) : (
               <div className="text-center py-12 text-slate-400">
                 <ShoppingCart className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                {t.admin.noOrders}
+                {t.admin.noOrders || '暂无订单数据'}
               </div>
             )}
           </div>
@@ -311,7 +318,7 @@ export default function AdminDashboard() {
                   <Zap className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900">{t.admin.skillsManagement}</h3>
+                  <h3 className="text-xl font-bold text-slate-900">{t.admin.skillsManagement || '技能管理'}</h3>
                   <p className="text-sm text-slate-500">管理平台上的所有技能</p>
                 </div>
               </div>
@@ -461,7 +468,7 @@ export default function AdminDashboard() {
                   <Users className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900">{t.admin.usersManagement}</h3>
+                  <h3 className="text-xl font-bold text-slate-900">{t.admin.usersManagement || '用户管理'}</h3>
                   <p className="text-sm text-slate-500">管理平台用户</p>
                 </div>
               </div>
@@ -617,7 +624,7 @@ export default function AdminDashboard() {
                   <CreditCard className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900">{t.admin.ordersManagement}</h3>
+                  <h3 className="text-xl font-bold text-slate-900">{t.admin.ordersManagement || '订单管理'}</h3>
                   <p className="text-sm text-slate-500">管理所有订单</p>
                 </div>
               </div>
@@ -700,7 +707,7 @@ export default function AdminDashboard() {
                           ? 'bg-green-100 text-green-700 border-green-200'
                           : 'bg-yellow-100 text-yellow-700 border-yellow-200'
                       }>
-                        {order.status === 'paid' ? t.admin.statusPaid : t.admin.statusPending}
+                        {order.status === 'paid' ? (t.admin.statusPaid || '已支付') : (t.admin.statusPending || '待处理')}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-slate-500">
@@ -746,91 +753,76 @@ export default function AdminDashboard() {
     </div>
   )
 
-  return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-white">
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/30 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute top-40 right-20 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-cyan-200/30 rounded-full blur-3xl animate-pulse delay-2000" />
-      </div>
-
-      {/* Header */}
-      <div className="relative border-b border-slate-200/50 bg-white/80 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+  const AnalyticsContent = () => (
+    <div className="space-y-6">
+      <div className="relative">
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur opacity-20" />
+        <div className="relative bg-white/80 backdrop-blur-xl rounded-2xl border border-slate-200/50 overflow-hidden">
+          <div className="p-6 border-b border-slate-200/50">
+            <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
-                  SkillsHub Admin
-                </h1>
-                <p className="text-xs text-slate-500 mt-0.5">智能管理控制台</p>
+                <h3 className="text-xl font-bold text-slate-900">{t.admin.analytics || '数据分析'}</h3>
+                <p className="text-sm text-slate-500 mt-1">平台详细数据统计和分析</p>
               </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100/50 border border-slate-200/50">
-                <Activity className="w-3.5 h-3.5 text-green-500" />
-                <span className="text-xs text-slate-600">系统状态: 正常</span>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-blue-100/50 to-purple-100/50">
+                <TrendingUp className="w-6 h-6 text-blue-600" />
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Tabs Navigation */}
-      <div className="relative border-b border-slate-200/50 bg-white/60 backdrop-blur-xl">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center gap-2 py-4 overflow-x-auto">
-            {navItems.map((item, index) => {
-              const Icon = item.icon
-              const isActive = activeTab === item.id
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`
-                    group relative px-5 py-3 rounded-xl font-medium transition-all duration-300
-                    ${isActive
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/25'
-                      : 'bg-white/30 text-slate-500 hover:bg-slate-100/50 hover:text-slate-700'
-                    }
-                  `}
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'}`} />
-                    <div className="flex flex-col items-start">
-                      <span className="text-sm font-semibold">{item.label}</span>
-                      <span className={`text-[10px] ${isActive ? 'text-white/70' : 'text-slate-400'}`}>{item.description}</span>
-                    </div>
-                  </div>
-                  {isActive && (
-                    <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1/2 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent" />
-                  )}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="relative container mx-auto px-4 py-8 flex-1">
-        {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4" />
-              <div className="text-slate-400">{t.home.loading}</div>
+          <div className="p-6">
+            <div className="text-center py-12 text-slate-400">
+              <TrendingUp className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              分析页面正在开发中，即将推出更多图表和报告
             </div>
           </div>
-        ) : (
-          <>
-            {activeTab === 'overview' && <OverviewContent />}
-            {activeTab === 'skills' && <SkillsContent />}
-            {activeTab === 'users' && <UsersContent />}
-            {activeTab === 'orders' && <OrdersContent />}
-          </>
-        )}
+        </div>
       </div>
     </div>
   )
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'overview':
+        return <OverviewContent />
+      case 'skills':
+        return <SkillsContent />
+      case 'users':
+        return <UsersContent />
+      case 'orders':
+        return <OrdersContent />
+      case 'analytics':
+        return <AnalyticsContent />
+      default:
+        return <OverviewContent />
+    }
+  }
+
+  if (loading && activeTab === 'overview') {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-8 w-48 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+            <div className="h-4 w-64 bg-slate-200 dark:bg-slate-800 rounded animate-pulse mt-2" />
+          </div>
+          <div className="h-10 w-32 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="border-slate-200 dark:border-slate-800">
+              <CardHeader className="pb-2">
+                <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 w-16 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  return renderContent()
 }

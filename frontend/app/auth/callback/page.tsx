@@ -5,6 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useUser } from "@/contexts/user-context"
 import { Card, CardContent } from "@/components/ui/card"
 
+export const dynamic = "force-dynamic"
+export const runtime = 'edge'
+
 export default function OAuthCallbackPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
