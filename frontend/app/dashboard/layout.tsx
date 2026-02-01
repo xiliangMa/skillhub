@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -10,8 +10,9 @@ import {
   Home,
   User,
   ShoppingCart,
-  Shield,
-  Settings,
+   Shield,
+   ShieldCheck,
+   Settings,
   Code,
   ChartBar,
   Menu,
@@ -60,50 +61,64 @@ export default function DashboardLayout({
     }
   }, [user, loading, router])
 
-  const navItems: NavItem[] = [
-    {
-      icon: <Home className="h-5 w-5" />,
-      label: t.dashboard?.nav?.dashboard || "仪表板",
-      href: "/dashboard",
-      description: t.dashboard?.nav?.dashboardDesc || "数据概览和快速访问"
-    },
-    {
-      icon: <User className="h-5 w-5" />,
-      label: t.dashboard?.nav?.profile || "个人信息",
-      href: "/dashboard/profile",
-      description: t.dashboard?.nav?.profileDesc || "管理个人资料和头像"
-    },
-    {
-      icon: <ShoppingCart className="h-5 w-5" />,
-      label: t.dashboard?.nav?.orders || "购买历史",
-      href: "/dashboard/orders",
-      description: t.dashboard?.nav?.ordersDesc || "查看订单和下载记录"
-    },
-    {
-      icon: <Shield className="h-5 w-5" />,
-      label: t.dashboard?.nav?.security || "账户安全",
-      href: "/dashboard/security",
-      description: t.dashboard?.nav?.securityDesc || "密码和第三方账号管理"
-    },
-    {
-      icon: <Settings className="h-5 w-5" />,
-      label: t.dashboard?.nav?.preferences || "偏好设置",
-      href: "/dashboard/preferences",
-      description: t.dashboard?.nav?.preferencesDesc || "语言、主题和通知设置"
-    },
-    {
-      icon: <Code className="h-5 w-5" />,
-      label: t.dashboard?.nav?.mySkills || "我的技能",
-      href: "/dashboard/my-skills",
-      description: t.dashboard?.nav?.mySkillsDesc || "管理和上传技能包"
-    },
-    {
-      icon: <ChartBar className="h-5 w-5" />,
-      label: t.dashboard?.nav?.analytics || "数据分析",
-      href: "/dashboard/analytics",
-      description: t.dashboard?.nav?.analyticsDesc || "学习进度和使用统计"
-    }
-  ]
+   const navItems = useMemo(() => {
+     const items: NavItem[] = [
+       {
+         icon: <Home className="h-5 w-5" />,
+         label: t.dashboard?.nav?.dashboard || "仪表板",
+         href: "/dashboard",
+         description: t.dashboard?.nav?.dashboardDesc || "数据概览和快速访问"
+       },
+       {
+         icon: <User className="h-5 w-5" />,
+         label: t.dashboard?.nav?.profile || "个人信息",
+         href: "/dashboard/profile",
+         description: t.dashboard?.nav?.profileDesc || "管理个人资料和头像"
+       },
+       {
+         icon: <ShoppingCart className="h-5 w-5" />,
+         label: t.dashboard?.nav?.orders || "购买历史",
+         href: "/dashboard/orders",
+         description: t.dashboard?.nav?.ordersDesc || "查看订单和下载记录"
+       },
+       {
+         icon: <Shield className="h-5 w-5" />,
+         label: t.dashboard?.nav?.security || "账户安全",
+         href: "/dashboard/security",
+         description: t.dashboard?.nav?.securityDesc || "密码和第三方账号管理"
+       },
+       {
+         icon: <Settings className="h-5 w-5" />,
+         label: t.dashboard?.nav?.preferences || "偏好设置",
+         href: "/dashboard/preferences",
+         description: t.dashboard?.nav?.preferencesDesc || "语言、主题和通知设置"
+       },
+       {
+         icon: <Code className="h-5 w-5" />,
+         label: t.dashboard?.nav?.mySkills || "我的技能",
+         href: "/dashboard/my-skills",
+         description: t.dashboard?.nav?.mySkillsDesc || "管理和上传技能包"
+       },
+       {
+         icon: <ChartBar className="h-5 w-5" />,
+         label: t.dashboard?.nav?.analytics || "数据分析",
+         href: "/dashboard/analytics",
+         description: t.dashboard?.nav?.analyticsDesc || "学习进度和使用统计"
+       }
+     ]
+
+     // 为管理员添加后台管理入口
+     if (user?.role === 'admin') {
+       items.push({
+         icon: <ShieldCheck className="h-5 w-5" />,
+         label: "后台管理",
+         href: "/admin",
+         description: "系统管理和监控"
+       })
+     }
+
+     return items
+   }, [t, user?.role])
 
   const handleLogout = () => {
     logout()
